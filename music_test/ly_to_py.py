@@ -8,7 +8,8 @@ import copy
 import numpy as np
 from numpy import prod
 from hmmlearn import hmm
-from collections import Iterable
+from collections import *
+import json
 
 #environment.set('musicxmlPath', '/mnt/c/Users/garrett-may/Desktop/music_test')
 #environment.set('midiPath', '/mnt/c/Users/garrett-may/Desktop/music_test')
@@ -102,9 +103,14 @@ def populate_measures(song):
             #print(str(n.name) + " | " + str(n.duration.type))
         song.append(measure)
     return song
+
+def circle_of_fifths_diff(a, b):
+    diff = abs(circle_of_fifths[a] - circle_of_fifths[b])
+    return min(diff, octave - diff)
     
 def generate_chords(song):        
-        
+    major_heuristic = [0,5,4,5,1,4,6,1,5,4,2,4]
+    best_chords = []
     for bar in song.elements:
         chord_prob = [0] * 12
         b = [note for note in bar if type(note) is Note]
@@ -112,19 +118,24 @@ def generate_chords(song):
         note_pitches = [int(note.pitch.ps % 12) for note in b]
         for j in range(0, 12):
             profile = rotate(major_profile, j)
+            heuristic = rotate(major_heuristic, j)
             note_prob = [1] * 12
             for i in range(0, len(note_pitches)):
                 note_pitch = note_pitches[i]
-                fifth_diff = abs(circle_of_fifths[j] - circle_of_fifths[note_pitch]) % octave
-                note_prob[note_pitch] = note_durations[i] * profile[note_pitch] * (octave - fifth_diff)
+                #fifth_diff = abs(circle_of_fifths[j] - circle_of_fifths[note_pitch]) % octave
+                note_prob[note_pitch] = heuristic[note_pitch]
+                #note_prob[note_pitch] = note_durations[i] * profile[note_pitch] * (octave - fifth_diff)
                 #note_prob[note_pitch] = fifth_diff
-            sum_prob = prod(note_prob)
+            fifth_diff = circle_of_fifths_diff(note_names.index(best_chords[-1][0][0]), j) if len(best_chords) > 0 else 0
+            sum_prob = sum(note_prob) + fifth_diff # 0 is C major
             chord_prob[j] += sum_prob
             
         profile = rotate(major_profile, 0)
         best_chord = [(note_names[i], chord_prob[i]) for i in range(0, len(chord_prob))]
-        best_chord = sorted(best_chord, key=lambda tp: tp[1], reverse=True)
+        best_chord = sorted(best_chord, key=lambda x: x[1])
+        #best_chord = sorted(best_chord, key=lambda tp: tp[1], reverse=True)
         #chord_prob = [chord_prob[i] * profile[i] for i in range(0, len(chord_prob))]
+        best_chords += [best_chord]
         print('Best chord: {}'.format(best_chord))
             
 def generate_key_naive(song):
@@ -161,23 +172,84 @@ def generate_key_Krumhansl(song):
     coefficients = [coefficient(x, y, p) for x in profile_types for p in chromatic_scale]
     coefficients = [(note_names[i % octave], key_types[i / octave]) for (i,r) in enumerate(coefficients)]
     return sorted(coefficients, key=lambda r: r[1])[0]
-    
-            
-song = import_mid(filename)    
-song = populate_measures(song)
+
+#song = import_mid(filename)    
+#song = populate_measures(song)
 
 #print(song.elements)      
         
-key = song.analyze('Krumhansl')
-print(key.tonic.name, key.mode)
-key = generate_key_Krumhansl(song)
-print(key)
+#key = song.analyze('Krumhansl')
+#print(key.tonic.name, key.mode)
+#key = generate_key_Krumhansl(song)
+#print(key)
 
-generate_chords(song)
+#generate_chords(song)
 #print(circle_of_fifths)
     
-export_ly(song, filename)
-    
+#export_ly(song, filename)
+
+def populate_chord_freq(song, unigrams, bigrams):
+    key = song.analyze('key')
+    chords_naive = song.chordify()
+    chord_names = [roman.romanNumeralFromChord(chord, key).romanNumeral for chord in chords_naive.flat.getElementsByClass('Chord')]
+    for i in range(0, len(chord_names) - 1):
+        # Unigrams
+        unigrams[chord_names[i]] += 1
+
+        # Bigrams
+        next_chords = bigrams.get(chord_names[i], defaultdict(int))
+        next_chords[chord_names[i+1]] += 1
+        bigrams[chord_names[i]] = next_chords
+    for i in range(len(chord_names) - 1, len(chord_names)):
+        # Unigrams
+        unigrams[chord_names[i]] += 1
+
+def print_unigrams(unigrams):
+    for chord,freq in unigrams.iteritems():
+        print('[{}]:{}'.format(chord, freq))
+
+def print_bigrams(bigrams):
+    for chord_1,next_chords in bigrams.iteritems():
+        for chord_2,freq in next_chords.iteritems():
+            print('[{}][{}]:{}'.format(chord_1, chord_2, freq))
+
+#b = corpus.parse('bwv66.6')
+
+unigrams = defaultdict(int)
+bigrams = defaultdict(dict)
+
+#populate_chord_freq(b, unigrams, bigrams)
+
+#for path in corpus.getComposer('bach'):
+#    print('Parsing {} ...'.format(path))
+#    work = corpus.parse(path)
+#    populate_chord_freq(work, unigrams, bigrams)
+
+#print_unigrams(unigrams)
+print_bigrams(bigrams)
+
+#js = json.dumps(unigrams)
+#with open('unigrams.json', 'w') as fp:
+#    fp.write(js)
+
+#js = json.dumps(bigrams)
+#with open('bigrams.json', 'w') as fp:
+#    fp.write(js)
+
+#with open('unigrams.json', 'r') as fp:
+#    data = json.load(fp)
+##total = float(sum([freq for chord,freq in data.iteritems()]))
+#for chord,freq in data.iteritems():
+#    data[chord] = 100 * freq / total
+#print_unigrams(data)
+
+with open('bigrams.json', 'r') as fp:
+    bigrams = json.load(fp)
+print_bigrams(bigrams)
+
+#for chord in bChords.recurse().getElementsByClass('Chord'):
+#    print(roman.romanNumeralFromChord(chord, key).romanNumeral)
+
 #key = b.analyze('KrumhanslSchmuckler')   
 #print('Bar key: {} | {}'.format(key.tonic.name, key.mode))
 #for k in key.alternateInterpretations:
