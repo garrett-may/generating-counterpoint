@@ -10,7 +10,7 @@ from numpy import prod
 from hmmlearn import hmm
 from collections import *
 import json
-
+from pprint import pprint
 #environment.set('musicxmlPath', '/mnt/c/Users/garrett-may/Desktop/music_test')
 #environment.set('midiPath', '/mnt/c/Users/garrett-may/Desktop/music_test')
 
@@ -18,6 +18,7 @@ filename = sys.argv[1]  #sys.argv[1]
 
 note_names = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 key_types = ['major', 'minor']
+roman_numerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII']
 
 octave = 12
 chromatic_scale = range(0, octave)
@@ -173,10 +174,10 @@ def generate_key_Krumhansl(song):
     coefficients = [(note_names[i % octave], key_types[i / octave]) for (i,r) in enumerate(coefficients)]
     return sorted(coefficients, key=lambda r: r[1])[0]
 
-#song = import_mid(filename)    
-#song = populate_measures(song)
+song = import_mid(filename)    
+song = populate_measures(song)
 
-#print(song.elements)      
+obs = [note.name for bar in song.elements for note in bar if type(note) is Note]      
         
 #key = song.analyze('Krumhansl')
 #print(key.tonic.name, key.mode)
@@ -212,11 +213,48 @@ def print_bigrams(bigrams):
     for chord_1,next_chords in bigrams.iteritems():
         for chord_2,freq in next_chords.iteritems():
             print('[{}][{}]:{}'.format(chord_1, chord_2, freq))
+            
+def viterbi(obs, states, start_p, trans_p, emit_p):
+    V = [{}]
+    for st in states:
+        V[0][st] = {"prob": start_p[st] * emit_p[st][obs[0]], "prev": None}
+    # Run Viterbi when t > 0
+    for t in range(1, len(obs)):
+        V.append({})
+        for st in states:
+            max_tr_prob = max(V[t-1][prev_st]["prob"]*trans_p[prev_st][st] for prev_st in states)
+            for prev_st in states:
+                if V[t-1][prev_st]["prob"] * trans_p[prev_st][st] == max_tr_prob:
+                    max_prob = max_tr_prob * emit_p[st][obs[t]]
+                    V[t][st] = {"prob": max_prob, "prev": prev_st}
+                    break
+    #for line in dptable(V):
+    #    print line
+    opt = []
+    # The highest probability
+    max_prob = max(value["prob"] for value in V[-1].values())
+    previous = None
+    # Get most probable state and its backtrack
+    for st, data in V[-1].items():
+        if data["prob"] == max_prob:
+            opt.append(st)
+            previous = st
+            break
+    # Follow the backtrack till the first observation
+    for t in range(len(V) - 2, -1, -1):
+        opt.insert(0, V[t + 1][previous]["prev"])
+        previous = V[t + 1][previous]["prev"]
+
+    print 'The steps of states are ' + ' '.join(opt) + ' with highest probability of %s' % max_prob
+    return opt
+
+def dptable(V):
+    # Print a table of steps from dictionary
+    yield " ".join(("%12d" % i) for i in range(len(V)))
+    for state in V[0]:
+        yield "%.7s: " % state + " ".join("%.7s" % ("%f" % v[state]["prob"]) for v in V)
 
 #b = corpus.parse('bwv66.6')
-
-unigrams = defaultdict(int)
-bigrams = defaultdict(dict)
 
 #populate_chord_freq(b, unigrams, bigrams)
 
@@ -226,7 +264,7 @@ bigrams = defaultdict(dict)
 #    populate_chord_freq(work, unigrams, bigrams)
 
 #print_unigrams(unigrams)
-print_bigrams(bigrams)
+#rint_bigrams(bigrams)
 
 #js = json.dumps(unigrams)
 #with open('unigrams.json', 'w') as fp:
@@ -236,16 +274,82 @@ print_bigrams(bigrams)
 #with open('bigrams.json', 'w') as fp:
 #    fp.write(js)
 
-#with open('unigrams.json', 'r') as fp:
-#    data = json.load(fp)
-##total = float(sum([freq for chord,freq in data.iteritems()]))
-#for chord,freq in data.iteritems():
-#    data[chord] = 100 * freq / total
-#print_unigrams(data)
-
+with open('unigrams.json', 'r') as fp:
+    unigrams = json.load(fp)
 with open('bigrams.json', 'r') as fp:
-    bigrams = json.load(fp)
-print_bigrams(bigrams)
+    bigrams = json.load(fp)  
+    
+states = [chord for chord,freq in unigrams.iteritems()]
+    
+start_p = {}
+total = float(sum([freq for chord,freq in unigrams.iteritems()]))
+for chord,freq in unigrams.iteritems():
+    start_p[chord] = freq / total
+    
+trans_p = defaultdict(dict) 
+for chord_1,next_chords in bigrams.iteritems():
+    total = float(sum([freq for chord_2,freq in next_chords.iteritems()]))
+    for chord_2,freq in next_chords.iteritems():
+        trans_p[chord_1][chord_2] = freq / total
+for chord_1 in states:
+    for chord_2 in states:
+        trans_p[chord_1][chord_2] = trans_p.get(chord_1, {}).get(chord_2, 0)
+        
+emit_p = defaultdict(dict)
+rotation_indices = [0, 2, 4, 5, 7, 9, 11]
+key = song.analyze('Krumhansl')
+
+def map_to_correct_pitch_name(pitch_name):
+    alt_note_names = ['B#', 'D-', '?', 'E-', 'F-', 'E#', 'G-', '?', 'A-', '?', 'B-', 'C-']
+    return note_names[alt_note_names.index(pitch_name)] if pitch_name in alt_note_names else pitch_name        
+
+for state in states:
+    chord = roman.RomanNumeral(state, key)
+    #print('{}\n{}\n'.format(chord, chord.pitchNames))
+    pitch_names = [pitch.name for pitch in chord.pitches]
+    pitch_names = map(map_to_correct_pitch_name, pitch_names)
+    is_major = chord.quality == 'major'
+    is_minor = chord.quality == 'minor'
+    pitch_values = [major_profile[0], major_profile[4], major_profile[7]] if is_major else \
+                    [minor_profile[0], minor_profile[3], minor_profile[7]] if is_minor else \
+                    []
+    for note_name in note_names:        
+        emit_p[state][note_name] = pitch_values[pitch_names.index(note_name)] / sum(pitch_values) if note_name in pitch_names and len(pitch_values) > 0 else 0
+        # Because it's zero, e.g. A can't appear in G major chord
+        
+        #emit_p[state][note_name] = 1.0 / len(pitch_names) if note_name in pitch_names else 0
+    
+    #values = map(lambda num: num.lower() == state.lower().replace('-', '').replace('#', ''), roman_numerals)
+    #numeral_index = values.index(True)
+    #rotation_index = rotation_indices[numeral_index]
+    #is_major = roman_numerals[numeral_index] == state.replace('-', '').replace('#', '')
+    #profile = major_profile if is_major else minor_profile
+    #total = sum(profile)
+    #print('rotation_index:{}'.format(rotation_index))
+    #for note,freq in zip(note_names, rotate(profile, rotation_index)):
+    #    emit_p[state][note] = freq / total
+
+opt = viterbi(obs, states, start_p, trans_p, emit_p)        
+opt_deque = deque(opt)      
+
+bars_with_chords = []
+for bar in song.elements:
+    bar_with_chords = []
+    for note in bar:
+        if type(note) == Note:
+            bar_with_chords += [opt_deque.popleft()]    
+    bars_with_chords += [bar_with_chords]
+for bar_with_chords in bars_with_chords:
+    print('Bar')
+    for chord in bar_with_chords:
+        print(chord)
+
+#pprint(emit_p)
+        
+#print_unigrams(start_p)
+#print_bigrams(trans_p)
+#print_bigrams(emit_p)
+#print(trans_p['I']['vi'])
 
 #for chord in bChords.recurse().getElementsByClass('Chord'):
 #    print(roman.romanNumeralFromChord(chord, key).romanNumeral)
