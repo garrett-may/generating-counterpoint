@@ -4,6 +4,8 @@ from music21.stream import *
 from music21.meter import *
 from music21.note import *
 from music21.note import *
+from music21.key import *
+from music21.chord import *
 import copy
 import numpy as np
 from numpy import prod
@@ -11,6 +13,11 @@ from hmmlearn import hmm
 from collections import *
 import json
 from pprint import pprint
+import random
+from deap import base
+from deap import creator
+from deap import tools
+
 #environment.set('musicxmlPath', '/mnt/c/Users/garrett-may/Desktop/music_test')
 #environment.set('midiPath', '/mnt/c/Users/garrett-may/Desktop/music_test')
 
@@ -294,7 +301,15 @@ for chord_1,next_chords in bigrams.iteritems():
 for chord_1 in states:
     for chord_2 in states:
         trans_p[chord_1][chord_2] = trans_p.get(chord_1, {}).get(chord_2, 0)
-        
+len_states = len(states)
+for chord_1 in states:
+    c_2_c_prob = trans_p[chord_1][chord_1]
+    discount = 0 #0.1 #c_2_c_prob - 0.05
+    trans_p[chord_1][chord_1] -= max(discount,0)
+    for chord_2 in states:
+        if chord_2 != chord_1:
+            trans_p[chord_1][chord_2] += max(discount / (len_states - 1), 0)
+
 emit_p = defaultdict(dict)
 rotation_indices = [0, 2, 4, 5, 7, 9, 11]
 key = song.analyze('Krumhansl')
@@ -302,6 +317,10 @@ key = song.analyze('Krumhansl')
 def map_to_correct_pitch_name(pitch_name):
     alt_note_names = ['B#', 'D-', '?', 'E-', 'F-', 'E#', 'G-', '?', 'A-', '?', 'B-', 'C-']
     return note_names[alt_note_names.index(pitch_name)] if pitch_name in alt_note_names else pitch_name        
+
+#def roman_to_pitch_names(roman, key):
+#    chord = roman.RomanNumeral(roman, key)
+#    pitch_names = [pitch.name for pitch in chord.pitches]
 
 for state in states:
     chord = roman.RomanNumeral(state, key)
@@ -342,7 +361,148 @@ for bar in song.elements:
 for bar_with_chords in bars_with_chords:
     print('Bar')
     for chord in bar_with_chords:
-        print(chord)
+        print('{}:{}'.format(chord, roman.RomanNumeral(chord, key).pitches))
+
+def fitness(chords, hmm_chords):
+    summed = 0
+    for index in range(0, len(chords)):
+        #print('-#{}'.format(index))
+        chord = chords[index]
+        hmm_chord = hmm_chords[index]
+        chord = roman.RomanNumeral(chord, Key('C'))
+        hmm_chord = roman.RomanNumeral(hmm_chord, Key('C'))
+        chord_pitches = map(map_to_correct_pitch_name, [pitch.name for pitch in chord.pitches])
+        hmm_chord_pitches  = map(map_to_correct_pitch_name, [pitch.name for pitch in chord.pitches])
+        dist = (note_names.index(chord_pitches[0]) - note_names.index(hmm_chord_pitches[0])) % octave
+        summed += dist
+    return summed
+
+def individual(chord_types, length):
+    chords = []
+    for i in range(0, length):
+        r = random.randint(0, len(chord_types) - 1)
+        chords += [chord_types[r]]
+    return chords
+
+def mutate(chords, chance_of_mutation, chord_types):
+    for i in range(0, len(chords)):
+        r = random.uniform(0, 1)
+        if r < chance_of_mutation:
+            chords[i] = individual(chord_types, 1)[0]
+    return chords
+
+def child(father_chord, mother_chord):
+    l = int(len(father_chord) / 2)
+    return father_chord[:l] + mother_chord[l:]
+
+def population(chord_types, length, num):
+    return [individual(chord_types, length) for i in range(0, num)]
+
+def genetic_algorithm(population, hmm_chords, chord_types, prop_of_best=0.2, chance_of_mutation=0.1):
+    # Find the best
+    #print('Find the best')
+    population = sorted(population, key=lambda chords: fitness(chords, hmm_chords))
+    #print('Keep the best')
+    # Keep the best
+    l = int(len(population) * prop_of_best)
+    best = population[:l]
+
+    # Breed to get the rest. Also apply mutation
+    children = []
+    for index in range(l, len(population)):
+        r = random.randint(0, l - 1)
+        s = r
+        while s == r:
+            #print('while')
+            s = random.randint(0, l - 1)
+        c = child(best[r], best[s])
+        c = mutate(c, chance_of_mutation, chord_types)
+        children += [c]
+
+    return best + children
+
+melody = [note for bar in song.elements for note in bar if type(note) == Note]
+#pop = population(states, len(melody), 10)
+#for i in range(0, 100):
+#    print('#{}'.format(i))
+#    pop = genetic_algorithm(pop, opt, states)
+#for chords in pop:
+#    print(chords)
+
+creator.create("FitnessMax", base.Fitness, weights=(1.0,))
+creator.create("Individual", list, fitness=creator.FitnessMax)
+
+def cumulative_distribution(chord_types):
+    states = [(chord,prob) for chord,prob in chord_types.iteritems()]
+    states = sorted(states, key=lambda (chord,prob): prob, reverse=True)
+    cumulative_dist = []
+    summed = 0.0
+    for chord,prob in states:
+        summed += prob
+        cumulative_dist += [(chord,summed)]
+    return cumulative_dist
+
+cumulative_dist = cumulative_distribution(unigrams)
+
+def attr_bool(cumulative_dist):
+    r = random.random()
+    for (chord,prob) in cumulative_dist:
+        if prob >= r:
+            return chord
+    return cumulative_dist[-1][0]
+
+def evaluate(individual):
+    #a = 1
+    #a_s = prod([emit_p[individual[index]][melody[index].name] for index in range(0, len(individual))])
+    #b = 0
+    #b_s = prod([trans_p[individual[index]][individual[index+1]] for index in range(0, len(individual) - 1)])
+    #return (a * a_s + b * b_s,)
+    return (sum([int(chord == 'I') for chord in individual]),)
+
+def mutate(cumulative_dist, individual, indpb):
+    for i in range(0, len(individual)):
+        if random.random() < indpb:
+            individual[i] = attr_bool(cumulative_dist)
+    return (individual,)
+
+toolbox = base.Toolbox()
+toolbox.register("attr_bool", attr_bool, cumulative_dist)
+toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_bool, len(melody))
+toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+toolbox.register("evaluate", evaluate)
+toolbox.register("mate", tools.cxTwoPoint)
+toolbox.register("mutate", mutate, cumulative_dist, indpb=0.2)
+toolbox.register("select", tools.selTournament, tournsize=3)
+
+pop = toolbox.population(n=10)
+CXPB, MUTPB = 0.5, 0.2
+fitnesses = list(map(toolbox.evaluate, pop))
+for ind, fit in zip(pop, fitnesses):
+    ind.fitness.values = fit
+fits = [ind.fitness.values[0] for ind in pop]
+
+g = 0
+while max(fits) < 100 and g < 1:
+    g += 1
+    offspring = toolbox.select(pop, len(pop))
+    offsprint = list(map(toolbox.clone, offspring))
+    for child1, child2 in zip(offspring[::2], offspring[1::2]):
+        if random.random() < CXPB:
+            toolbox.mate(child1, child2)
+            del child1.fitness.values
+            del child2.fitness.values
+    for mutant in offspring:
+        if random.random() < MUTPB:
+            toolbox.mutate(mutant)
+            del mutant.fitness.values
+    invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
+    fitnesses = map(toolbox.evaluate, invalid_ind)
+    for ind,fit in zip(invalid_ind, fitnesses):
+        ind.fitness.values = fit
+    pop[:] = offspring
+    best_ind = tools.selBest(pop, len(pop))
+    #best_chord = [roman.romanNumeralFromChord(Chord([int(n) for n in c]), Key('C')).romanNumeral for c in best_ind]
+    print("Gen #{}: best individual is {}".format(g, best_ind))
 
 #pprint(emit_p)
         
