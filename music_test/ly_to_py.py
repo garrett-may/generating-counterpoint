@@ -6,6 +6,8 @@ from music21.note import *
 from music21.note import *
 from music21.key import *
 from music21.chord import *
+from music21.pitch import *
+from music21.interval import *
 import copy
 import numpy as np
 from numpy import prod
@@ -503,6 +505,40 @@ while max(fits) < 100 and g < 1:
     best_ind = tools.selBest(pop, len(pop))
     #best_chord = [roman.romanNumeralFromChord(Chord([int(n) for n in c]), Key('C')).romanNumeral for c in best_ind]
     print("Gen #{}: best individual is {}".format(g, best_ind))
+
+#note_prob = defaultdict(dict)
+
+#for path in corpus.getComposer('bach'):
+#    print('Parsing {} ...'.format(path))
+#    work = corpus.parse(path)
+#    key = work.analyze('key')
+#    print('Key: {}'.format(key))
+#    interval = Interval(key.tonic, Pitch('C'))
+#    work = work.transpose(interval)
+#    chords_naive = work.chordify()
+#    for chord in chords_naive.flat.getElementsByClass('Chord'):
+#        notes = [note.name for note in chord]
+#        notes = map(map_to_correct_pitch_name, notes)
+#        chord_name = roman.romanNumeralFromChord(chord, Key('C')).romanNumeral        
+#        #print('{}|{}'.format(chord_name, note_names))
+#        for note_name in notes:
+#            note_prob[chord_name] = note_prob.get(chord_name, defaultdict(int))
+#            note_prob[chord_name][note_name] += 1
+
+#for state in states:
+#    for note_name in note_names:
+#        note_prob[state][note_name] = note_prob.get(state, {}).get(note_name, 0)
+
+#for chord_name, notes in note_prob.iteritems():
+#    for note_name, prob in notes.iteritems():
+#        print('{}:{}:{}'.format(chord_name, note_name, prob))
+
+#js = json.dumps(note_prob)
+#with open('note_prob.json', 'w') as fp:
+#    fp.write(js)
+
+    #chord_names = [roman.romanNumeralFromChord(chord, key).romanNumeral for chord in chords_naive.flat.getElementsByClass('Chord')]
+
 
 #pprint(emit_p)
         
