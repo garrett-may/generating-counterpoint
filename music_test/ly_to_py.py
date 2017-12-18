@@ -287,6 +287,8 @@ with open('unigrams.json', 'r') as fp:
     unigrams = json.load(fp)
 with open('bigrams.json', 'r') as fp:
     bigrams = json.load(fp)  
+with open('note_prob.json', 'r') as fp:
+    note_prob = json.load(fp)
     
 states = [chord for chord,freq in unigrams.iteritems()]
     
@@ -317,9 +319,12 @@ rotation_indices = [0, 2, 4, 5, 7, 9, 11]
 key = song.analyze('Krumhansl')
 
 def map_to_correct_pitch_name(pitch_name):
-    alt_note_names = ['B#', 'D-', '?', 'E-', 'F-', 'E#', 'G-', '?', 'A-', '?', 'B-', 'C-']
-    return note_names[alt_note_names.index(pitch_name)] if pitch_name in alt_note_names else pitch_name        
-
+    alt_note_names_1 = ['B#', 'D-', 'C##', 'E-', 'F-', 'E#', 'G-', 'F##', 'A-', 'G##', 'B-', 'C-']    
+    alt_note_names_2 = ['D--', 'B##', 'E--', 'F--', 'D##', 'G--', 'E##', 'A--', '?', 'B--', 'C--', 'A##']    
+    return (note_names[alt_note_names_1.index(pitch_name)] if pitch_name in alt_note_names_1 else 
+            note_names[alt_note_names_2.index(pitch_name)] if pitch_name in alt_note_names_2 else 
+            pitch_name)
+    
 #def roman_to_pitch_names(roman, key):
 #    chord = roman.RomanNumeral(roman, key)
 #    pitch_names = [pitch.name for pitch in chord.pitches]
@@ -350,6 +355,13 @@ for state in states:
     #for note,freq in zip(note_names, rotate(profile, rotation_index)):
     #    emit_p[state][note] = freq / total
 
+emit_p = defaultdict(dict)
+for state in states:
+    total = sum([prob for note, prob in note_prob[state].iteritems()])
+    for note in note_names:
+        emit_p[state][note] = note_prob[state].get(note, 0) / float(total)
+print_bigrams(emit_p)
+    
 opt = viterbi(obs, states, start_p, trans_p, emit_p)        
 opt_deque = deque(opt)      
 
@@ -459,7 +471,13 @@ def evaluate(individual):
     #b = 0
     #b_s = prod([trans_p[individual[index]][individual[index+1]] for index in range(0, len(individual) - 1)])
     #return (a * a_s + b * b_s,)
-    return (sum([int(chord == 'I') for chord in individual]),)
+    note_sum = 0
+    for index in range(0, len(individual)):
+        note = melody[index]
+        chord = individual[index]
+        note_sum += emit_p[chord][note.name]
+    return (note_sum,)
+    #return (sum([int(chord == 'I') for chord in individual]),)
 
 def mutate(cumulative_dist, individual, indpb):
     for i in range(0, len(individual)):
@@ -505,25 +523,26 @@ while max(fits) < 100 and g < 1:
     best_ind = tools.selBest(pop, len(pop))
     #best_chord = [roman.romanNumeralFromChord(Chord([int(n) for n in c]), Key('C')).romanNumeral for c in best_ind]
     print("Gen #{}: best individual is {}".format(g, best_ind))
-
-#note_prob = defaultdict(dict)
-
-#for path in corpus.getComposer('bach'):
-#    print('Parsing {} ...'.format(path))
-#    work = corpus.parse(path)
-#    key = work.analyze('key')
-#    print('Key: {}'.format(key))
-#    interval = Interval(key.tonic, Pitch('C'))
-#    work = work.transpose(interval)
-#    chords_naive = work.chordify()
-#    for chord in chords_naive.flat.getElementsByClass('Chord'):
-#        notes = [note.name for note in chord]
-#        notes = map(map_to_correct_pitch_name, notes)
-#        chord_name = roman.romanNumeralFromChord(chord, Key('C')).romanNumeral        
-#        #print('{}|{}'.format(chord_name, note_names))
-#        for note_name in notes:
-#            note_prob[chord_name] = note_prob.get(chord_name, defaultdict(int))
-#            note_prob[chord_name][note_name] += 1
+"""
+note_prob = defaultdict(dict)
+for path in corpus.getComposer('bach'):
+    print('Parsing {} ...'.format(path))
+    work = corpus.parse(path)
+    key = work.analyze('key')
+    print('Key: {}'.format(key))
+    #interval = Interval(key.tonic, Pitch('C'))
+    interval = (note_names.index(map_to_correct_pitch_name(key.tonic.name)) - note_names.index('C')) % octave
+    #work = work.transpose(interval)
+    chords_naive = work.chordify()
+    for chord in chords_naive.flat.getElementsByClass('Chord'):
+        notes = [note.name for note in chord]
+        notes = map(map_to_correct_pitch_name, notes)
+        notes = map(lambda n: note_names[(note_names.index(map_to_correct_pitch_name(n)) - interval) % octave], notes)
+        chord_name = roman.romanNumeralFromChord(chord, key).romanNumeral        
+        #print('{}|{}'.format(chord_name, note_names))
+        for note_name in notes:
+            note_prob[chord_name] = note_prob.get(chord_name, defaultdict(int))
+            note_prob[chord_name][note_name] += 1
 
 #for state in states:
 #    for note_name in note_names:
@@ -533,10 +552,10 @@ while max(fits) < 100 and g < 1:
 #    for note_name, prob in notes.iteritems():
 #        print('{}:{}:{}'.format(chord_name, note_name, prob))
 
-#js = json.dumps(note_prob)
-#with open('note_prob.json', 'w') as fp:
-#    fp.write(js)
-
+js = json.dumps(note_prob)
+with open('note_prob.json', 'w') as fp:
+    fp.write(js)
+"""
     #chord_names = [roman.romanNumeralFromChord(chord, key).romanNumeral for chord in chords_naive.flat.getElementsByClass('Chord')]
 
 
