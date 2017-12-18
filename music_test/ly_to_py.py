@@ -200,22 +200,28 @@ obs = [note.name for bar in song.elements for note in bar if type(note) is Note]
     
 #export_ly(song, filename)
 
-def populate_chord_freq(song, unigrams, bigrams):
+def populate_chord_freq(song, unigrams, bigrams, trigrams):
     key = song.analyze('key')
     chords_naive = song.chordify()
     chord_names = [roman.romanNumeralFromChord(chord, key).romanNumeral for chord in chords_naive.flat.getElementsByClass('Chord')]
-    for i in range(0, len(chord_names) - 1):
-        # Unigrams
-        unigrams[chord_names[i]] += 1
-
-        # Bigrams
-        next_chords = bigrams.get(chord_names[i], defaultdict(int))
-        next_chords[chord_names[i+1]] += 1
-        bigrams[chord_names[i]] = next_chords
-    for i in range(len(chord_names) - 1, len(chord_names)):
-        # Unigrams
-        unigrams[chord_names[i]] += 1
-
+    #for i in range(0, len(chord_names) - 1):
+    #    # Unigrams
+    #    unigrams[chord_names[i]] += 1
+    #
+    #    # Bigrams
+    #    next_chords = bigrams.get(chord_names[i], defaultdict(int))
+    #    next_chords[chord_names[i+1]] += 1
+    #    bigrams[chord_names[i]] = next_chords
+    #for i in range(len(chord_names) - 1, len(chord_names)):
+    #    # Unigrams
+    #    unigrams[chord_names[i]] += 1
+    for i in range(0, len(chord_names) - 2):
+        next_chords = trigrams.get(chord_names[i], defaultdict(dict))
+        next_next_chords = next_chords.get(chord_names[i+1], defaultdict(int))
+        next_next_chords[chord_names[i+2]] += 1
+        next_chords[chord_names[i+1]] = next_next_chords
+        trigrams[chord_names[i]] = next_chords
+    
 def print_unigrams(unigrams):
     for chord,freq in unigrams.iteritems():
         print('[{}]:{}'.format(chord, freq))
@@ -267,12 +273,16 @@ def dptable(V):
 
 #b = corpus.parse('bwv66.6')
 
-#populate_chord_freq(b, unigrams, bigrams)
+#unigrams = {}
+#bigrams = {}
+#trigrams = {}
+
+#populate_chord_freq(b, unigrams, bigrams, trigrams)
 
 #for path in corpus.getComposer('bach'):
 #    print('Parsing {} ...'.format(path))
 #    work = corpus.parse(path)
-#    populate_chord_freq(work, unigrams, bigrams)
+#    populate_chord_freq(work, unigrams, bigrams, trigrams)
 
 #print_unigrams(unigrams)
 #rint_bigrams(bigrams)
@@ -285,10 +295,16 @@ def dptable(V):
 #with open('bigrams.json', 'w') as fp:
 #    fp.write(js)
 
+#js = json.dumps(trigrams)
+#with open('trigrams.json', 'w') as fp:
+#    fp.write(js)
+
 with open('unigrams.json', 'r') as fp:
     unigrams = json.load(fp)
 with open('bigrams.json', 'r') as fp:
     bigrams = json.load(fp)  
+with open('trigrams.json', 'r') as fp:
+    trigrams = json.load(fp)
 with open('note_prob.json', 'r') as fp:
     note_prob = json.load(fp)
     
@@ -307,6 +323,25 @@ for chord_1,next_chords in bigrams.iteritems():
 for chord_1 in states:
     for chord_2 in states:
         trans_p[chord_1][chord_2] = trans_p.get(chord_1, {}).get(chord_2, 0)
+        
+tri_p = defaultdict(lambda : defaultdict(dict))   
+for chord_1, next_chords in trigrams.iteritems():
+    total_1 = 0
+    for chord_2, next_next_chords in next_chords.iteritems():
+        for chord_3,freq in next_next_chords.iteritems():
+            total_1 += freq
+    for chord_2, next_next_chords in next_chords.iteritems():
+        total_2 = 0
+        for chord_3,freq in next_next_chords.iteritems():
+            total_2 += freq
+        for chord_3,freq in next_next_chords.iteritems():
+            tri_p[chord_1][chord_2][chord_3] = (freq / float(total_1)) / float(total_2)
+
+for chord_1 in states:
+    for chord_2 in states:
+        for chord_3 in states:
+            tri_p[chord_1][chord_2][chord_3] = tri_p.get(chord_1, defaultdict(dict)).get(chord_2, defaultdict(int)).get(chord_3, 0)
+        
 len_states = len(states)
 for chord_1 in states:
     c_2_c_prob = trans_p[chord_1][chord_1]
@@ -468,17 +503,19 @@ def attr_float(cumulative_dist):
     return cumulative_dist[-1][0]
 
 def evaluate(individual):
-    #a = 1
-    #a_s = prod([emit_p[individual[index]][melody[index].name] for index in range(0, len(individual))])
-    #b = 0
-    #b_s = prod([trans_p[individual[index]][individual[index+1]] for index in range(0, len(individual) - 1)])
-    #return (a * a_s + b * b_s,)
-    note_sum = 0
-    for index in range(0, len(individual)):
-        note = melody[index]
-        chord = individual[index]
-        note_sum += emit_p[chord][note.name]
-    return (note_sum,)
+    a = 1
+    a_s = sum([emit_p[individual[index]][melody[index].name] for index in range(0, len(individual))])
+    b = 1
+    b_s = sum([trans_p[individual[index]][individual[index+1]] for index in range(0, len(individual) - 1)])
+    c = 1
+    c_s = sum([tri_p[individual[index]][individual[index+1]][individual[index+2]] for index in range(0, len(individual) - 2)])
+    return (a * a_s + b * b_s + c * c_s,)
+    #note_sum = 0
+    #for index in range(0, len(individual)):
+    #    note = melody[index]
+    #    chord = individual[index]
+    #    note_sum += emit_p[chord][note.name]
+    #return (note_sum,)
     #return (sum([int(chord == 'I') for chord in individual]),)
 
 def mutate(cumulative_dist, individual, indpb):
@@ -496,7 +533,7 @@ toolbox.register("mate", tools.cxTwoPoint)
 toolbox.register("mutate", mutate, cumulative_dist, indpb=0.2)
 toolbox.register("select", tools.selTournament, tournsize=3)
 
-pop = toolbox.population(n=100)
+pop = toolbox.population(n=1000)
 hof = tools.HallOfFame(1)
 stats = tools.Statistics(lambda ind: ind.fitness.values)
 stats.register("avg", numpy.mean)
@@ -504,9 +541,25 @@ stats.register("std", numpy.std)
 stats.register("min", numpy.min)
 stats.register("max", numpy.max)
 
-pop, log = algorithms.eaSimple(pop, toolbox, cxpb=0.5, mutpb=0.2, ngen=100, stats=stats, halloffame=hof, verbose=True)
+pop, log = algorithms.eaSimple(pop, toolbox, cxpb=0.5, mutpb=0.2, ngen=1000, stats=stats, halloffame=hof, verbose=True)
 best_ind = tools.selBest(pop, 1)
-print("Gen #{}: best individual is {}".format(100, best_ind))
+print("Gen #{}: best individual is:".format(1000))
+for ind in best_ind:
+    print(ind)
+
+opt_deque = deque(best_ind[0])      
+
+bars_with_chords = []
+for bar in song.elements:
+    bar_with_chords = []
+    for note in bar:
+        if type(note) == Note:
+            bar_with_chords += [opt_deque.popleft()]    
+    bars_with_chords += [bar_with_chords]
+for bar_with_chords in bars_with_chords:
+    print('Bar')
+    for chord in bar_with_chords:
+        print('{}:{}'.format(chord, roman.RomanNumeral(chord, key).pitches))
 
 """
 pop = toolbox.population(n=10)
