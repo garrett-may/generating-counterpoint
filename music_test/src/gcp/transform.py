@@ -1,5 +1,9 @@
-
+from music21 import converter
 from music21.note import *
+from collections import Iterable
+from music21.meter import TimeSignature
+from music21.stream import Measure
+import json
 
 # Imports .mid to music21 song
 def import_mid(filename):
@@ -84,3 +88,13 @@ def populate_measures(song):
             measure.append(copy.deepcopy(n))
         song.append(measure)
     return song
+    
+def import_JSON(filename):
+    with open(filename, 'r') as fp:
+        r = json.load(fp)
+    return r
+    
+def export_JSON(filename, w):
+    js = json.dumps(w)
+    with open(filename, 'w') as fp:
+        fp.write(js)

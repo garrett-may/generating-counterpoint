@@ -18,7 +18,7 @@ chromatic_scale = range(0, octave)
 
 # Circle of fifths
 circle_of_fifths = [note * 7 % octave for note in chromatic_scale]
-"""
+
 # Unigrams
 with open('json/unigrams.json', 'r') as fp:
     unigrams = json.load(fp)
@@ -34,7 +34,7 @@ with open('json/trigrams.json', 'r') as fp:
 # Note probabilites per chord
 with open('json/note_prob.json', 'r') as fp:
     note_prob = json.load(fp)
-"""
+
 def note_name(note_name):
     alt_note_names_1 = ['B#', 'D-', 'C##', 'E-', 'F-', 'E#', 'G-', 'F##', 'A-', 'G##', 'B-', 'C-']    
     alt_note_names_2 = ['D--', 'B##', 'E--', 'F--', 'D##', 'G--', 'E##', 'A--', '?', 'B--', 'C--', 'A##']    
@@ -50,3 +50,6 @@ def notes_names(notes, key):
     
 def roman(chord, key):
     return romanNumeralFromChord(chord, key).romanNumeral
+    
+def rotate(l, n):
+    return l[-n:] + l[:-n]

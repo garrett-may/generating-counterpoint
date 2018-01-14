@@ -15,31 +15,61 @@ from numpy import prod
 from hmmlearn import hmm
 from collections import *
 from pprint import pprint
-import random
-from deap import base
-from deap import creator
-from deap import tools
-from deap import algorithms
+
+from gcp import util
+from gcp import transform
 from gcp import chords as chords
+from gcp import genetic
 import json
 
 #environment.set('musicxmlPath', '/mnt/c/Users/garrett-may/Desktop/music_test')
 #environment.set('midiPath', '/mnt/c/Users/garrett-may/Desktop/music_test')
 
-#filename = sys.argv[1]  #sys.argv[1]
+filename = sys.argv[1]  #sys.argv[1]
 
-
-def rotate(l, n):
-    return l[-n:] + l[:-n]
-
-
+#with open('unigrams.json', 'r') as fp:
+#    unigrams = json.load(fp)
     
-
+# Bigrams
+#with open('bigrams.json', 'r') as fp:
+#    bigrams = json.load(fp)  
     
+# Trigrams
+#with open('trigrams.json', 'r') as fp:
+#    trigrams = json.load(fp)
+    
+# Note probabilites per chord
+#with open('note_prob.json', 'r') as fp:
+#    note_prob = json.load(fp)
+    
+#print(sum([prob for chord_1,prob in util.unigrams.iteritems()]))
+#print(sum([prob for chord_1,n_chords in util.bigrams.iteritems() for chord_2,prob in n_chords.iteritems()]))
+#print(sum([prob for chord_1,n_chords in util.trigrams.iteritems() for chord_2,nn_chords in n_chords.iteritems() for chord_3,prob in nn_chords.iteritems()]))
+
+#total_1 = sum([prob for chord_1,prob in unigrams.iteritems()])
+#total_2 = sum([prob for chord_1,n_chords in bigrams.iteritems() for chord_2,prob in n_chords.iteritems()])
+#total_3 = sum([prob for chord_1,n_chords in trigrams.iteritems() for chord_2,nn_chords in n_chords.iteritems() for chord_3,prob in nn_chords.iteritems()])
+
+#unigrams, bigrams, trigrams, note_prob = chords.read_chords_corpus()
+
+#transform.export_JSON('json/unigrams.json', unigrams)
+#transform.export_JSON('json/bigrams.json', bigrams)
+#transform.export_JSON('json/trigrams.json', trigrams)
+#transform.export_JSON('json/note_prob.json', note_prob)
 
 
+#for chord_1,freq in unigrams.iteritems():
+#    a, b = int(round(freq)), int(round(total_1*util.unigrams[chord_1]))
+#    print('{} {} {}'.format(a, b, a == b))
+#for chord_1,n_chords in bigrams.iteritems():
+#    for chord_2,freq in n_chords.iteritems():
+#        a, b = int(round(freq)), int(round(total_2*util.bigrams[chord_1][chord_2]))
+#        print('{} {} {}'.format(a, b, a == b))
 
-
+song = transform.import_mid(filename)
+transform.populate_measures(song)
+melody = [note for bar in song.elements for note in bar if type(note) == Note]
+genetic.algorithm(melody)
 
 #song = import_mid(filename)    
 #song = populate_measures(song)

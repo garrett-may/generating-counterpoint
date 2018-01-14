@@ -55,15 +55,17 @@ def convert_frequency_to_probability(unigrams, bigrams, trigrams, note_prob):
     chord_types = [chord_1 for chord_1,freq in unigrams.iteritems()]   
 
     # Change frequency into probability
-    total_chord = float(sum([freq for chord_1,freq in unigrams.iteritems()]))
+    total_1 = float(sum([freq for chord_1,freq in unigrams.iteritems()]))
+    total_2 = float(sum([freq for chord_1,n_chords in bigrams.iteritems() for chord_2,freq in n_chords.iteritems()]))
+    total_3 = float(sum([freq for chord_1,n_chords in trigrams.iteritems() for chord_2,nn_chords in n_chords.iteritems() for chord_3,freq in nn_chords.iteritems()]))
     for chord_1 in chord_types:
-        unigrams[chord_1] /= total_chord
+        unigrams[chord_1] /= total_1
         for chord_2 in chord_types:
-            bigrams[chord_1][chord_2] /= total_chord
+            bigrams[chord_1][chord_2] /= total_2
             for chord_3 in chord_types:
-                trigrams[chord_1][chord_2][chord_3] /= total_chord
-    total_note = float(sum([freq for chord_1 in chord_types for note_name,freq in note_prob[chord_1].iteritems()]))
-    for chord_1 in chord_types:               
+                trigrams[chord_1][chord_2][chord_3] /= total_3
+    for chord_1 in chord_types:            
+        total_note = float(sum([freq for note_name,freq in note_prob[chord_1].iteritems()]))
         for note_name in util.note_names:
             note_prob[chord_1][note_name] /= total_note
         
@@ -78,6 +80,21 @@ def read_chords_corpus():
         populate_with_frequencies(work, unigrams, bigrams, trigrams, note_prob)
     convert_frequency_to_probability(unigrams, bigrams, trigrams, note_prob)
     return (unigrams, bigrams, trigrams, note_prob)
-   
     
+def pprint(ind, song):
+    opt_deque = deque(ind)      
+
+    bars_with_chords = []
+    for bar in song.elements:
+        bar_with_chords = []
+        for note in bar:
+            if type(note) == Note:
+                bar_with_chords += [opt_deque.popleft()]    
+        bars_with_chords += [bar_with_chords]
+    for bar_with_chords in bars_with_chords:
+        print('Bar')
+        for chord in bar_with_chords:
+            print('{}:{}'.format(chord, roman.RomanNumeral(chord, key).pitches))
+       
+        
     
