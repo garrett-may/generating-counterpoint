@@ -19,6 +19,7 @@ from pprint import pprint
 from gcp import util
 from gcp import transform
 from gcp import chords as chords
+from gcp import counterpoint as counterpoint
 from gcp import genetic
 import json
 
@@ -66,10 +67,17 @@ filename = sys.argv[1]  #sys.argv[1]
 #        a, b = int(round(freq)), int(round(total_2*util.bigrams[chord_1][chord_2]))
 #        print('{} {} {}'.format(a, b, a == b))
 
-song = transform.import_mid(filename)
-transform.populate_measures(song)
-melody = [note for bar in song.elements for note in bar if type(note) == Note]
-genetic.algorithm(melody)
+#song = transform.import_mid(filename)
+#transform.populate_measures(song)
+#melody = [note for bar in song.elements for note in bar if type(note) == Note]
+#genetic.algorithm(melody)
+
+from music21 import corpus
+for path in corpus.getComposer('bach')[0:1]:
+    print('Parsing {} ...'.format(path))
+    work = corpus.parse(path)
+    (unigrams, bigrams, trigrams, chord_prob) = counterpoint.populate_with_frequencies(work)
+
 
 #song = import_mid(filename)    
 #song = populate_measures(song)
