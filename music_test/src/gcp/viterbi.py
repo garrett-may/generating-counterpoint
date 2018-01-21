@@ -1,3 +1,4 @@
+from gcp import util
 
 def viterbi(obs, states, start_p, trans_p, emit_p):
     V = [{}]
@@ -38,3 +39,9 @@ def dptable(V):
     yield " ".join(("%12d" % i) for i in range(len(V)))
     for state in V[0]:
         yield "%.7s: " % state + " ".join("%.7s" % ("%f" % v[state]["prob"]) for v in V)
+
+def algorithm_chords(mel):
+    return viterbi(mel, [chord_1 for chord_1 in util.chord_unigrams.iterkeys()], util.chord_unigrams, util.chord_bigrams, util.chord_given)
+    
+def algorithm_melody(chords):
+    return viterbi(chords, [note_1 for note_1 in util.note_unigrams.iterkeys()], util.note_unigrams, util.note_bigrams, util.note_given)

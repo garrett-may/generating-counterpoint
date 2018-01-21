@@ -3,19 +3,29 @@ from music21 import corpus
 from collections import *
 
 def _total(item):
-    return sum(total(i) for i in item.values()) if type(item) is dict else item
+    return sum(_total(i) for i in item.values()) if type(item) is dict else item
 
 def _freq_to_prob(item, total):
-    return {key: freq_to_prob(value, total) for key, value in item.iteritems()} if type(item) is dict else item / total
+    return {key: _freq_to_prob(value, total) for key, value in item.iteritems()} if type(item) is dict else item / total
 
 def convert_frequency_to_probability(item):    
     return _freq_to_prob(item, float(_total(item)))
 
+def _merge(this, that):
+    if this == {}:
+        return that
+    elif that == {}:
+        return this
+    elif type(this) is dict and type(that) is dict:
+        return {key: _merge(this[key], that[key]) for key in set(this.iterkeys()) | set(that.iterkeys())}
+    else:
+        return this + that
+        
 def merge((a0, b0, c0, d0), (a1, b1, c1, d1)):
-    return (Counter(a0) + Counter(a1),
-            Counter(b0) + Counter(b1),
-            Counter(c0) + Counter(c1),
-            Counter(d0) + Counter(d1))
+    return (_merge(a0, a1),
+            _merge(b0, b1),
+            _merge(c0, c1),
+            _merge(d0, d1))
 
 def populate_with_frequencies(song):
     # Get the key
@@ -26,7 +36,7 @@ def populate_with_frequencies(song):
     chord_names = [util.roman(chord, key) for chord in chords_naive.flat.getElementsByClass('Chord')]
 
     note_types = util.note_names
-    chord_types = set(chord_names)
+    chord_types = util.chord_names
     part_names = [[util.note_name(note.name) for note in part.flat.getElementsByClass('Note')] for part in song.getElementsByClass('Part')]    
     
     unigrams = {note_1:0 for note_1 in note_types}
@@ -66,8 +76,8 @@ def read_notes_corpus():
         print('Parsing {} ...'.format(path))
         work = corpus.parse(path)
         (unigrams, bigrams, trigrams, chord_prob) = merge(
-            populate_with_frequencies(work), 
-            (unigrams, bigrams, trigrams, chord_prob))
+            (unigrams, bigrams, trigrams, chord_prob),
+            populate_with_frequencies(work))
 
     return (convert_frequency_to_probability(unigrams), 
             convert_frequency_to_probability(bigrams), 

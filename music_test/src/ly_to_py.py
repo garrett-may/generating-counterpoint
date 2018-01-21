@@ -21,6 +21,7 @@ from gcp import transform
 from gcp import chords as chords
 from gcp import counterpoint as counterpoint
 from gcp import genetic
+from gcp import viterbi
 import json
 
 #environment.set('musicxmlPath', '/mnt/c/Users/garrett-may/Desktop/music_test')
@@ -51,12 +52,12 @@ filename = sys.argv[1]  #sys.argv[1]
 #total_2 = sum([prob for chord_1,n_chords in bigrams.iteritems() for chord_2,prob in n_chords.iteritems()])
 #total_3 = sum([prob for chord_1,n_chords in trigrams.iteritems() for chord_2,nn_chords in n_chords.iteritems() for chord_3,prob in nn_chords.iteritems()])
 
-#unigrams, bigrams, trigrams, note_prob = chords.read_chords_corpus()
+#unigrams, bigrams, trigrams, note_prob = counterpoint.read_notes_corpus()
 
-#transform.export_JSON('json/unigrams.json', unigrams)
-#transform.export_JSON('json/bigrams.json', bigrams)
-#transform.export_JSON('json/trigrams.json', trigrams)
-#transform.export_JSON('json/note_prob.json', note_prob)
+#transform.export_JSON('json/note_unigrams.json', unigrams)
+#transform.export_JSON('json/note_bigrams.json', bigrams)
+#transform.export_JSON('json/note_trigrams.json', trigrams)
+#transform.export_JSON('json/chord_note_prob.json', note_prob)
 
 
 #for chord_1,freq in unigrams.iteritems():
@@ -67,16 +68,14 @@ filename = sys.argv[1]  #sys.argv[1]
 #        a, b = int(round(freq)), int(round(total_2*util.bigrams[chord_1][chord_2]))
 #        print('{} {} {}'.format(a, b, a == b))
 
-#song = transform.import_mid(filename)
-#transform.populate_measures(song)
-#melody = [note for bar in song.elements for note in bar if type(note) == Note]
-#genetic.algorithm(melody)
+song = transform.import_mid(filename)
+transform.populate_measures(song)
+melody = [note.name for bar in song.elements for note in bar if type(note) == Note]
+chords = viterbi.algorithm_chords(melody)
+viterbi.algorithm_melody(chords)
 
-from music21 import corpus
-for path in corpus.getComposer('bach')[0:1]:
-    print('Parsing {} ...'.format(path))
-    work = corpus.parse(path)
-    (unigrams, bigrams, trigrams, chord_prob) = counterpoint.populate_with_frequencies(work)
+
+#genetic.algorithm(melody)
 
 
 #song = import_mid(filename)    
