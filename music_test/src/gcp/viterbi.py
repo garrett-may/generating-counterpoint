@@ -1,6 +1,6 @@
 from gcp import util
 
-def viterbi(obs, states, start_p, trans_p, emit_p):
+def viterbi(obs, states, start_p, trans_p, emit_p, evaluate=None):
     V = [{}]
     for st in states:
         V[0][st] = {"prob": start_p[st] * emit_p[st][obs[0]], "prev": None}
@@ -14,6 +14,8 @@ def viterbi(obs, states, start_p, trans_p, emit_p):
                     max_prob = max_tr_prob * emit_p[st][obs[t]]
                     V[t][st] = {"prob": max_prob, "prev": prev_st}
                     break
+        if evaluate != None:
+            V = evaluate(V, t)
     #for line in dptable(V):
     #    print line
     opt = []
@@ -40,8 +42,15 @@ def dptable(V):
     for state in V[0]:
         yield "%.7s: " % state + " ".join("%.7s" % ("%f" % v[state]["prob"]) for v in V)
 
+def melody_evaluate(V, t):
+    note_types = util.note_names
+    for note_1 in note_types:
+        if V[t][note_1]['prev'] == note_1:
+            V[t][note_1]['prob'] = 0.0
+    return V
+        
 def algorithm_chords(mel):
     return viterbi(mel, [chord_1 for chord_1 in util.chord_unigrams.iterkeys()], util.chord_unigrams, util.chord_bigrams, util.chord_given)
     
 def algorithm_melody(chords):
-    return viterbi(chords, [note_1 for note_1 in util.note_unigrams.iterkeys()], util.note_unigrams, util.note_bigrams, util.note_given)
+    return viterbi(chords, [note_1 for note_1 in util.note_unigrams.iterkeys()], util.note_unigrams, util.note_bigrams, util.note_given, melody_evaluate)

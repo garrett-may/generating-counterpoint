@@ -3,6 +3,7 @@ from music21.note import *
 from collections import Iterable
 from music21.meter import TimeSignature
 from music21.stream import Measure
+from music21 import lily
 import json
 
 # Imports .mid to music21 song
@@ -21,6 +22,9 @@ def export_ly(song, filename):
     
     with open(filename + '.ly', 'w') as file:
         file.write(str(lpc.context))
+        
+def export_mid(song, filename):
+    song.write('midi', filename + '.mid')
         
 # Some LilyPond files won't populate the measures/bars
 # If this is the case, populate them

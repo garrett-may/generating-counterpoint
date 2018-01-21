@@ -6,6 +6,7 @@ from music21.note import *
 from music21.note import *
 from music21.key import *
 from music21.chord import *
+from music21.roman import *
 from music21.pitch import *
 from music21.interval import *
 import copy
@@ -70,10 +71,36 @@ filename = sys.argv[1]  #sys.argv[1]
 
 song = transform.import_mid(filename)
 transform.populate_measures(song)
-melody = [note.name for bar in song.elements for note in bar if type(note) == Note]
-chords = viterbi.algorithm_chords(melody)
-viterbi.algorithm_melody(chords)
+orig_melody = [note for bar in song.elements for note in bar]
+melody = [note for bar in song.elements for note in bar if type(note) == Note]
+chords = viterbi.algorithm_chords([note.name for note in melody])
+#viterbi.algorithm_melody(chords)
 
+# Add a new part
+tune = Part()
+accompaniment = Part()
+key = song.analyze('key')
+counter = 0
+for index, chord_1 in enumerate(chords):
+    while type(orig_melody[counter]) != Note:
+        counter += 1
+        rest = Rest()
+        rest.quarterLength == orig_melody[counter].quarterLength
+        accompaniment.append(rest)
+        tune.append(rest)
+    rn = roman.RomanNumeral(chord_1, key)
+    chord = Chord([pitch.name + '3' for pitch in rn.pitches])
+    chord.quarterLength = melody[index].quarterLength
+    #chord = chord.transpose(interval.Interval(-24))
+    accompaniment.append(chord)
+    tune.append(melody[index])
+    counter += 1
+    
+#song.insert(1, accompaniment)
+score = Score()
+score.insert(0, tune)
+score.insert(0, accompaniment)
+transform.export_mid(score, filename)
 
 #genetic.algorithm(melody)
 
