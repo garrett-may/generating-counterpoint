@@ -33,7 +33,7 @@ def viterbi(obs, states, start_p, trans_p, emit_p, evaluate=None):
         opt.insert(0, V[t + 1][previous]["prev"])
         previous = V[t + 1][previous]["prev"]
 
-    print 'The steps of states are ' + ' '.join(opt) + ' with highest probability of %s' % max_prob
+    print('The steps of states are ' + ' '.join(opt) + ' with highest probability of '.format(max_prob))
     return opt
 
 def dptable(V):
@@ -50,7 +50,7 @@ def melody_evaluate(V, t):
     return V
         
 def algorithm_chords(mel):
-    return viterbi(mel, [chord_1 for chord_1 in util.chord_unigrams.iterkeys()], util.chord_unigrams, util.chord_bigrams, util.chord_given)
+    return viterbi(mel, [chord_1 for chord_1 in util.chord_unigrams.keys()], util.chord_unigrams, util.chord_bigrams, util.chord_given)
     
 def algorithm_melody(chords):
-    return viterbi(chords, [note_1 for note_1 in util.note_unigrams.iterkeys()], util.note_unigrams, util.note_bigrams, util.note_given, melody_evaluate)
+    return viterbi(chords, [note_1 for note_1 in util.note_unigrams.keys()], util.note_unigrams, util.note_bigrams, util.note_given, melody_evaluate)

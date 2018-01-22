@@ -9,13 +9,6 @@ from music21.chord import *
 from music21.roman import *
 from music21.pitch import *
 from music21.interval import *
-import copy
-import numpy as np
-import numpy
-from numpy import prod
-from hmmlearn import hmm
-from collections import *
-from pprint import pprint
 
 from gcp import util
 from gcp import transform
@@ -74,7 +67,7 @@ transform.populate_measures(song)
 orig_melody = [note for bar in song.elements for note in bar]
 melody = [note for bar in song.elements for note in bar if type(note) == Note]
 chords = viterbi.algorithm_chords([note.name for note in melody])
-#viterbi.algorithm_melody(chords)
+viterbi.algorithm_melody(chords)
 
 # Add a new part
 tune = Part()

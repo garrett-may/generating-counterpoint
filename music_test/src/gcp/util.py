@@ -1,5 +1,6 @@
 from music21.roman import romanNumeralFromChord
 import json
+from gcp import transform
 
 # Basic note names
 note_names = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
@@ -22,37 +23,42 @@ chromatic_scale = range(0, octave)
 # Circle of fifths
 circle_of_fifths = [note * 7 % octave for note in chromatic_scale]
 
+def _total(item):
+    return sum(_total(i) for i in item.values()) if type(item) is dict else item
+
 # Unigrams
-with open('json/chord_unigrams.json', 'r') as fp:
-    chord_unigrams = json.load(fp)
+chord_unigrams = transform.import_JSON('json/chord_unigrams.json')
     
 # Bigrams
-with open('json/chord_bigrams.json', 'r') as fp:
-    chord_bigrams = json.load(fp)  
+chord_bigrams = transform.import_JSON('json/chord_bigrams.json')
     
 # Trigrams
-with open('json/chord_trigrams.json', 'r') as fp:
-    chord_trigrams = json.load(fp)
+chord_trigrams = transform.import_JSON('json/chord_trigrams.json')
     
 # Note probabilites per chord
-with open('json/chord_given.json', 'r') as fp:
-    chord_given = json.load(fp)
+chord_given = transform.import_JSON('json/chord_given.json')
     
 # Unigrams
-with open('json/note_unigrams.json', 'r') as fp:
-    note_unigrams = json.load(fp)
+note_unigrams = transform.import_JSON('json/note_unigrams.json')
     
 # Bigrams
-with open('json/note_bigrams.json', 'r') as fp:
-    note_bigrams = json.load(fp)  
+note_bigrams = transform.import_JSON('json/note_bigrams.json')
     
 # Trigrams
-with open('json/note_trigrams.json', 'r') as fp:
-    note_trigrams = json.load(fp)
+note_trigrams = transform.import_JSON('json/note_trigrams.json')
     
 # Chord probabilites per note
-with open('json/note_given.json', 'r') as fp:
-    note_given = json.load(fp)
+note_given = transform.import_JSON('json/note_given.json')
+
+#print(_total(chord_unigrams))
+#assert _total(chord_unigrams) == 1.0
+#assert _total(chord_bigrams) == 1.0
+#assert _total(chord_trigrams) == 1.0
+#assert _total(chord_given) == 1.0
+#assert _total(note_unigrams) == 1.0
+#assert _total(note_bigrams) == 1.0
+#assert _total(note_trigrams) == 1.0
+#assert _total(note_given) == 1.0
 
 def note_name(note_name):
     alt_note_names_1 = ['B#', 'D-', 'C##', 'E-', 'F-', 'E#', 'G-', 'F##', 'A-', 'G##', 'B-', 'C-']    

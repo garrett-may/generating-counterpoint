@@ -3,15 +3,14 @@ from deap import creator
 from deap import tools
 from deap import algorithms
 import random
-import util
-import numpy
+from gcp import util
 from numpy import prod
 
 melody = []
 
 def cumulative_distribution(chord_types):
-    states = [(chord,prob) for chord,prob in chord_types.iteritems()]
-    states = sorted(states, key=lambda (chord,prob): prob, reverse=True)
+    states = [(chord,prob) for chord,prob in chord_types.items()]
+    states = sorted(states, key=lambda pair: pair[1], reverse=True)
     cumulative_dist = []
     summed = 0.0
     for chord,prob in states:

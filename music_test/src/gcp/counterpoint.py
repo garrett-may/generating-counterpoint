@@ -1,4 +1,3 @@
-import util
 from music21 import corpus
 from collections import *
 
@@ -6,7 +5,7 @@ def _total(item):
     return sum(_total(i) for i in item.values()) if type(item) is dict else item
 
 def _freq_to_prob(item, total):
-    return {key: _freq_to_prob(value, total) for key, value in item.iteritems()} if type(item) is dict else item / total
+    return {key: _freq_to_prob(value, total) for key, value in item.items()} if type(item) is dict else item / total
 
 def convert_frequency_to_probability(item):    
     return _freq_to_prob(item, float(_total(item)))
@@ -17,11 +16,13 @@ def _merge(this, that):
     elif that == {}:
         return this
     elif type(this) is dict and type(that) is dict:
-        return {key: _merge(this[key], that[key]) for key in set(this.iterkeys()) | set(that.iterkeys())}
+        return {key: _merge(this[key], that[key]) for key in set(this.keys()) | set(that.keys())}
     else:
         return this + that
         
-def merge((a0, b0, c0, d0), (a1, b1, c1, d1)):
+def merge(x, y):
+    (a0, b0, c0, d0) = x
+    (a1, b1, c1, d1) = y
     return (_merge(a0, a1),
             _merge(b0, b1),
             _merge(c0, c1),

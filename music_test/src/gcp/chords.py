@@ -1,4 +1,4 @@
-import util
+from gcp import util
 from music21 import corpus
 from collections import *
 
@@ -14,7 +14,7 @@ def populate_with_frequencies(song, unigrams, bigrams, trigrams, note_prob):
     for i in range(0, len(chord_names)):
         unigrams[chord_names[i]] += 1
         
-    chord_types = [chord_1 for chord_1,freq in unigrams.iteritems()]    
+    chord_types = [chord_1 for chord_1,freq in unigrams.items()]    
         
     for chord_1 in chord_types:
         unigrams[chord_1] = unigrams.get(chord_1, 0)    
@@ -52,12 +52,12 @@ def populate_with_frequencies(song, unigrams, bigrams, trigrams, note_prob):
             note_prob[chord_1][note_name] = note_prob.get(chord_1, {}).get(note_name, 0)
                 
 def convert_frequency_to_probability(unigrams, bigrams, trigrams, note_prob):
-    chord_types = [chord_1 for chord_1,freq in unigrams.iteritems()]   
+    chord_types = [chord_1 for chord_1,freq in unigrams.items()]   
 
     # Change frequency into probability
-    total_1 = float(sum([freq for chord_1,freq in unigrams.iteritems()]))
-    total_2 = float(sum([freq for chord_1,n_chords in bigrams.iteritems() for chord_2,freq in n_chords.iteritems()]))
-    total_3 = float(sum([freq for chord_1,n_chords in trigrams.iteritems() for chord_2,nn_chords in n_chords.iteritems() for chord_3,freq in nn_chords.iteritems()]))
+    total_1 = float(sum([freq for chord_1,freq in unigrams.items()]))
+    total_2 = float(sum([freq for chord_1,n_chords in bigrams.items() for chord_2,freq in n_chords.items()]))
+    total_3 = float(sum([freq for chord_1,n_chords in trigrams.items() for chord_2,nn_chords in n_chords.items() for chord_3,freq in nn_chords.items()]))
     for chord_1 in chord_types:
         unigrams[chord_1] /= total_1
         for chord_2 in chord_types:
@@ -65,7 +65,7 @@ def convert_frequency_to_probability(unigrams, bigrams, trigrams, note_prob):
             for chord_3 in chord_types:
                 trigrams[chord_1][chord_2][chord_3] /= total_3
     for chord_1 in chord_types:            
-        total_note = float(sum([freq for note_name,freq in note_prob[chord_1].iteritems()]))
+        total_note = float(sum([freq for note_name,freq in note_prob[chord_1].items()]))
         for note_name in util.note_names:
             note_prob[chord_1][note_name] /= total_note
         
