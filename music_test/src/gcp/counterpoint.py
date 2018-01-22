@@ -1,5 +1,6 @@
 from music21 import corpus
 from collections import *
+from gcp import util
 
 def _total(item):
     return sum(_total(i) for i in item.values()) if type(item) is dict else item
@@ -7,8 +8,13 @@ def _total(item):
 def _freq_to_prob(item, total):
     return {key: _freq_to_prob(value, total) for key, value in item.items()} if type(item) is dict else item / total
 
-def convert_frequency_to_probability(item):    
-    return _freq_to_prob(item, float(_total(item)))
+def convert_frequency_to_probability(x):
+    (unigrams, bigrams, trigrams, given) = x
+    unigrams = _freq_to_prob(unigrams, float(_total(unigrams)))
+    bigrams = _freq_to_prob(bigrams, float(_total(bigrams)))
+    trigrams = _freq_to_prob(trigrams, float(_total(trigrams)))
+    prob = {chord_1: _freq_to_prob(values, float(_total(values))) for chord_1, values in given.items()}
+    return (unigrams, bigrams, trigrams, given)
 
 def _merge(this, that):
     if this == {}:
@@ -80,7 +86,4 @@ def read_notes_corpus():
             (unigrams, bigrams, trigrams, chord_prob),
             populate_with_frequencies(work))
 
-    return (convert_frequency_to_probability(unigrams), 
-            convert_frequency_to_probability(bigrams), 
-            convert_frequency_to_probability(trigrams),
-            convert_frequency_to_probability(chord_prob))
+    return convert_frequency_to_probability((unigrams, bigrams, trigrams, chord_prob))

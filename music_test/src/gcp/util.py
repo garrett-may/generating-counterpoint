@@ -1,6 +1,7 @@
 from music21.roman import romanNumeralFromChord
 import json
 from gcp import transform
+from math import isclose
 
 # Basic note names
 note_names = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
@@ -50,15 +51,15 @@ note_trigrams = transform.import_JSON('json/note_trigrams.json')
 # Chord probabilites per note
 note_given = transform.import_JSON('json/note_given.json')
 
-#print(_total(chord_unigrams))
-#assert _total(chord_unigrams) == 1.0
-#assert _total(chord_bigrams) == 1.0
-#assert _total(chord_trigrams) == 1.0
-#assert _total(chord_given) == 1.0
-#assert _total(note_unigrams) == 1.0
-#assert _total(note_bigrams) == 1.0
-#assert _total(note_trigrams) == 1.0
-#assert _total(note_given) == 1.0
+#assert isclose(_total(chord_unigrams), 1.0)
+#assert isclose(_total(chord_bigrams), 1.0)
+#assert isclose(_total(chord_trigrams), 1.0)
+#print(_total(chord_given))
+#assert isclose(_total(chord_given), 1.0)
+#assert isclose(_total(note_unigrams), 1.0)
+#assert isclose(_total(note_bigrams), 1.0)
+#assert isclose(_total(note_trigrams), 1.0)
+#assert isclose(_total(note_given), 1.0)
 
 def note_name(note_name):
     alt_note_names_1 = ['B#', 'D-', 'C##', 'E-', 'F-', 'E#', 'G-', 'F##', 'A-', 'G##', 'B-', 'C-']    

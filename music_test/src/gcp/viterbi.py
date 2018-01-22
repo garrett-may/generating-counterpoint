@@ -43,10 +43,10 @@ def dptable(V):
         yield "%.7s: " % state + " ".join("%.7s" % ("%f" % v[state]["prob"]) for v in V)
 
 def melody_evaluate(V, t):
-    note_types = util.note_names
-    for note_1 in note_types:
-        if V[t][note_1]['prev'] == note_1:
-            V[t][note_1]['prob'] = 0.0
+    #note_types = util.note_names
+    #for note_1 in note_types:
+    #    if V[t][note_1]['prev'] == note_1:
+    #        V[t][note_1]['prob'] = 0.0
     return V
         
 def algorithm_chords(mel):

@@ -51,7 +51,7 @@ filename = sys.argv[1]  #sys.argv[1]
 #transform.export_JSON('json/note_unigrams.json', unigrams)
 #transform.export_JSON('json/note_bigrams.json', bigrams)
 #transform.export_JSON('json/note_trigrams.json', trigrams)
-#transform.export_JSON('json/chord_note_prob.json', note_prob)
+#transform.export_JSON('json/note_given.json', note_prob)
 
 
 #for chord_1,freq in unigrams.iteritems():
@@ -67,7 +67,7 @@ transform.populate_measures(song)
 orig_melody = [note for bar in song.elements for note in bar]
 melody = [note for bar in song.elements for note in bar if type(note) == Note]
 chords = viterbi.algorithm_chords([note.name for note in melody])
-viterbi.algorithm_melody(chords)
+#viterbi.algorithm_melody(chords)
 
 # Add a new part
 tune = Part()
