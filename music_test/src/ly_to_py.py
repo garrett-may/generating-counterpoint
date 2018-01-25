@@ -67,6 +67,7 @@ transform.populate_measures(song)
 orig_melody = [note for bar in song.elements for note in bar]
 melody = [note for bar in song.elements for note in bar if type(note) == Note]
 chords = viterbi.algorithm_chords([note.name for note in melody])
+chords = genetic.algorithm(melody)
 #viterbi.algorithm_melody(chords)
 
 # Add a new part
