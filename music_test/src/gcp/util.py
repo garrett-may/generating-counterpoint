@@ -1,7 +1,8 @@
 from music21.roman import romanNumeralFromChord
-import json
+from music21.stream import Part
 from gcp import transform
 from math import isclose
+import json
 
 # Basic note names
 note_names = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
@@ -28,52 +29,52 @@ def _total(item):
     return sum(_total(i) for i in item.values()) if type(item) is dict else item
 
 # Unigrams
-chord_unigrams = transform.import_JSON('json/chord_unigrams.json')
+chords_unigrams = transform.import_JSON('json/chord_unigrams.json')
     
 # Bigrams
-chord_bigrams = transform.import_JSON('json/chord_bigrams.json')
+chords_bigrams = transform.import_JSON('json/chord_bigrams.json')
     
 # Trigrams
-chord_trigrams = transform.import_JSON('json/chord_trigrams.json')
+chords_trigrams = transform.import_JSON('json/chord_trigrams.json')
     
 # Note probabilites per chord
-chord_given = transform.import_JSON('json/chord_given.json')
+chords_given = transform.import_JSON('json/chord_given.json')
     
 # Unigrams
-note_unigrams = transform.import_JSON('json/note_unigrams.json')
+notes_unigrams = transform.import_JSON('json/note_unigrams.json')
     
 # Bigrams
-note_bigrams = transform.import_JSON('json/note_bigrams.json')
+notes_bigrams = transform.import_JSON('json/note_bigrams.json')
     
 # Trigrams
-note_trigrams = transform.import_JSON('json/note_trigrams.json')
+notes_trigrams = transform.import_JSON('json/note_trigrams.json')
     
 # Chord probabilites per note
-note_given = transform.import_JSON('json/note_given.json')
+notes_given = transform.import_JSON('json/note_given.json')
 
 # Unigrams
-chord_major_unigrams = transform.import_JSON('json/chord_major_unigrams.json')
+chords_major_unigrams = transform.import_JSON('json/chord_major_unigrams.json')
     
 # Bigrams
-chord_major_bigrams = transform.import_JSON('json/chord_major_bigrams.json')
+chords_major_bigrams = transform.import_JSON('json/chord_major_bigrams.json')
     
 # Trigrams
-chord_major_trigrams = transform.import_JSON('json/chord_major_trigrams.json')
+chords_major_trigrams = transform.import_JSON('json/chord_major_trigrams.json')
     
 # Note probabilites per chord
-chord_major_given = transform.import_JSON('json/chord_major_given.json')
+chords_major_given = transform.import_JSON('json/chord_major_given.json')
 
 # Unigrams
-chord_minor_unigrams = transform.import_JSON('json/chord_minor_unigrams.json')
+chords_minor_unigrams = transform.import_JSON('json/chord_minor_unigrams.json')
     
 # Bigrams
-chord_minor_bigrams = transform.import_JSON('json/chord_minor_bigrams.json')
+chords_minor_bigrams = transform.import_JSON('json/chord_minor_bigrams.json')
     
 # Trigrams
-chord_minor_trigrams = transform.import_JSON('json/chord_minor_trigrams.json')
+chords_minor_trigrams = transform.import_JSON('json/chord_minor_trigrams.json')
     
 # Note probabilites per chord
-chord_minor_given = transform.import_JSON('json/chord_minor_given.json')
+chords_minor_given = transform.import_JSON('json/chord_minor_given.json')
 
 #assert isclose(_total(chord_unigrams), 1.0)
 #assert isclose(_total(chord_bigrams), 1.0)
@@ -103,3 +104,15 @@ def roman(chord, key):
     
 def rotate(l, n):
     return l[-n:] + l[:-n]
+    
+def part(sequence):
+    part = Part()
+    for elem in sequence:
+        part.append(elem)
+    return part
+    
+def key(sequence):
+    return part(sequence).analyze('key')
+    
+def is_major(key):
+    return key.mode == 'major'
