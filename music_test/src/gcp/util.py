@@ -51,6 +51,30 @@ note_trigrams = transform.import_JSON('json/note_trigrams.json')
 # Chord probabilites per note
 note_given = transform.import_JSON('json/note_given.json')
 
+# Unigrams
+chord_major_unigrams = transform.import_JSON('json/chord_major_unigrams.json')
+    
+# Bigrams
+chord_major_bigrams = transform.import_JSON('json/chord_major_bigrams.json')
+    
+# Trigrams
+chord_major_trigrams = transform.import_JSON('json/chord_major_trigrams.json')
+    
+# Note probabilites per chord
+chord_major_given = transform.import_JSON('json/chord_major_given.json')
+
+# Unigrams
+chord_minor_unigrams = transform.import_JSON('json/chord_minor_unigrams.json')
+    
+# Bigrams
+chord_minor_bigrams = transform.import_JSON('json/chord_minor_bigrams.json')
+    
+# Trigrams
+chord_minor_trigrams = transform.import_JSON('json/chord_minor_trigrams.json')
+    
+# Note probabilites per chord
+chord_minor_given = transform.import_JSON('json/chord_minor_given.json')
+
 #assert isclose(_total(chord_unigrams), 1.0)
 #assert isclose(_total(chord_bigrams), 1.0)
 #assert isclose(_total(chord_trigrams), 1.0)

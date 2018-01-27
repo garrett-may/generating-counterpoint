@@ -50,7 +50,7 @@ def melody_evaluate(V, t):
     return V
         
 def algorithm_chords(mel):
-    return viterbi(mel, [chord_1 for chord_1 in util.chord_unigrams.keys()], util.chord_unigrams, util.chord_bigrams, util.chord_given)
+    return viterbi(mel, [chord_1 for chord_1 in util.chord_major_unigrams.keys()], util.chord_major_unigrams, util.chord_major_bigrams, util.chord_major_given)
     
 def algorithm_melody(chords):
     return viterbi(chords, [note_1 for note_1 in util.note_unigrams.keys()], util.note_unigrams, util.note_bigrams, util.note_given, melody_evaluate)

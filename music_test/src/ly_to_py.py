@@ -46,12 +46,12 @@ filename = sys.argv[1]  #sys.argv[1]
 #total_2 = sum([prob for chord_1,n_chords in bigrams.iteritems() for chord_2,prob in n_chords.iteritems()])
 #total_3 = sum([prob for chord_1,n_chords in trigrams.iteritems() for chord_2,nn_chords in n_chords.iteritems() for chord_3,prob in nn_chords.iteritems()])
 
-#unigrams, bigrams, trigrams, note_prob = counterpoint.read_notes_corpus()
+#unigrams, bigrams, trigrams, note_prob = chords.read_chords_corpus(is_major=False)
 
-#transform.export_JSON('json/note_unigrams.json', unigrams)
-#transform.export_JSON('json/note_bigrams.json', bigrams)
-#transform.export_JSON('json/note_trigrams.json', trigrams)
-#transform.export_JSON('json/note_given.json', note_prob)
+#transform.export_JSON('json/chords_minor_unigrams.json', unigrams)
+#transform.export_JSON('json/chords_minor_bigrams.json', bigrams)
+#transform.export_JSON('json/chords_minor_trigrams.json', trigrams)
+#transform.export_JSON('json/chords_minor_given.json', note_prob)
 
 
 #for chord_1,freq in unigrams.iteritems():

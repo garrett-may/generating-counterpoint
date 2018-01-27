@@ -2,9 +2,11 @@ from gcp import util
 from music21 import corpus
 from collections import *
 
-def populate_with_frequencies(song, unigrams, bigrams, trigrams, note_prob):
+def populate_with_frequencies(song, unigrams, bigrams, trigrams, note_prob, is_major):
     # Get the key
     key = song.analyze('key')
+    if((key.mode == 'major') != is_major):
+        return
     # Apply the naive chord algorithm
     chords_naive = song.chordify()
     # Get the chord names i.e. Roman numerals from the chords
@@ -69,7 +71,7 @@ def convert_frequency_to_probability(unigrams, bigrams, trigrams, note_prob):
         for note_name in util.note_names:
             note_prob[chord_1][note_name] /= total_note
         
-def read_chords_corpus():
+def read_chords_corpus(is_major):
     unigrams = defaultdict(float)
     bigrams = defaultdict(lambda: defaultdict(float))
     trigrams = defaultdict(lambda: defaultdict(lambda: defaultdict(float)))
@@ -77,7 +79,7 @@ def read_chords_corpus():
     for path in corpus.getComposer('bach'):
         print('Parsing {} ...'.format(path))
         work = corpus.parse(path)
-        populate_with_frequencies(work, unigrams, bigrams, trigrams, note_prob)
+        populate_with_frequencies(work, unigrams, bigrams, trigrams, note_prob, is_major)
     convert_frequency_to_probability(unigrams, bigrams, trigrams, note_prob)
     return (unigrams, bigrams, trigrams, note_prob)
     
