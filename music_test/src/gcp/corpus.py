@@ -42,8 +42,8 @@ def _merge(x, y):
 # Populates chord frequencies for a song
 def populate_chords(song, is_major):
     # Initial information
-    note_types = util.note_names
     chord_types = util.chord_names
+    note_types = util.note_names    
     
     unigrams = {chord_1:0 for chord_1 in chord_types}
     bigrams = {chord_1:{chord_2:0 for chord_2 in note_types} for chord_1 in chord_types}
@@ -58,22 +58,24 @@ def populate_chords(song, is_major):
     # Apply the naive chord algorithm
     chords_naive = song.chordify()
     
+    chords = chords_naive.flat.getElementsByClass('Chord')
+    chord_names = [util.roman(chord, key) for chord in chords]
+    note_names_list = [util.notes_names([note.name for note in chord], key) for chord in chords]
+    
     # Chord unigrams
-    for i in range(0, len(note_names)):
-        unigrams[note_names[i]] += 1
+    for i in range(0, len(chord_names)):
+        unigrams[chord_names[i]] += 1
 
     # Chord bigrams
-    for i in range(0, len(note_names) - 1):
-        bigrams[note_names[i]][note_names[i+1]] += 1
+    for i in range(0, len(chord_names) - 1):
+        bigrams[chord_names[i]][chord_names[i+1]] += 1
 
     # Chord trigrams
-    for i in range(0, len(note_names) - 2):
-        trigrams[note_names[i]][note_names[i+1]][note_names[i+2]] += 1
+    for i in range(0, len(chord_names) - 2):
+        trigrams[chord_names[i]][chord_names[i+1]][chord_names[i+2]] += 1
         
     # Note probabilities per chord   
-    for chord in chords_naive.flat.getElementsByClass('Chord'):
-        notes = util.notes_names([note.name for note in chord], key)
-        chord_name = util.roman(chord, key)       
+    for chord_name, note_names in zip(chord_names, note_names_list):
         for note_name in notes:
             given[chord_name][note_name] += 1
 
@@ -98,6 +100,10 @@ def populate_notes(song):
     # Apply the naive chord algorithm
     chords_naive = song.chordify()
     
+    chords = chords_naive.flat.getElementsByClass('Chord')
+    chord_names = [util.roman(chord, key) for chord in chords]
+    note_names_list = [util.notes_names([note.name for note in chord], key) for chord in chords]
+    
     part_names = [[util.note_name(note.name) for note in part.flat.getElementsByClass('Note')] for part in song.getElementsByClass('Part')]        
     for note_names in part_names:    
         # Note unigrams
@@ -112,10 +118,8 @@ def populate_notes(song):
         for i in range(0, len(note_names) - 2):
             trigrams[note_names[i]][note_names[i+1]][note_names[i+2]] += 1
         
-    # Chord probabilities per note       
-    for chord in chords_naive.flat.getElementsByClass('Chord'):
-        notes = util.notes_names([note.name for note in chord], key)
-        chord_name = util.roman(chord, key)       
+    # Chord probabilities per note    
+    for chord_name, note_names in zip(chord_names, note_names_list):
         for note_name in notes:
             given[note_name][chord_name] += 1
 

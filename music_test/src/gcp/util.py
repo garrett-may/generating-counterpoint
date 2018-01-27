@@ -8,8 +8,6 @@ import json
 note_names = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 chord_names = ['I', '-I', 'i', '#i', 'II', '-II', 'ii', '#ii', '-ii', 'III', '-III', 'iii', '#iii', '-iii', 'IV', 'iv', '#iv', 'V', 'v', '#v', 'VI', '-VI', 'vi', '#vi', '-vi', 'VII', '-VII', 'vii', '#vii', '-vii']
 
-[]
-
 # Basic Roman numerals
 roman_numerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII']
 
