@@ -8,7 +8,7 @@ def _total(item):
     
 # Converts frequency to probability (total sum will be 1.0)
 def _freq_to_prob(item, total):
-    return {key: _freq_to_prob(value, total) for key, value in item.items()} if type(item) is dict else item / total
+    return {key: _freq_to_prob(value, total) for key, value in item.items()} if type(item) is dict else item / total if total > 0.0 else 0.0
     
 # Converts the information's frequency to probability
 def _convert_frequency_to_probability(information):
@@ -16,7 +16,7 @@ def _convert_frequency_to_probability(information):
     unigrams = _freq_to_prob(unigrams, float(_total(unigrams)))
     bigrams = _freq_to_prob(bigrams, float(_total(bigrams)))
     trigrams = _freq_to_prob(trigrams, float(_total(trigrams)))
-    given = {chord_1: _freq_to_prob(values, float(_total(values))) for chord_1, values in given.items()}
+    given = {key: _freq_to_prob(values, float(_total(values))) for key, values in given.items()}
     return (unigrams, bigrams, trigrams, given)
     
 # Merges two dictionaries together by summing the values of keys
@@ -26,7 +26,7 @@ def _merge_dictionaries(this, that):
     elif that == {}:
         return this
     elif type(this) is dict and type(that) is dict:
-        return {key: _merge(this[key], that[key]) for key in set(this.keys()) | set(that.keys())}
+        return {key: _merge_dictionaries(this[key], that[key]) for key in set(this.keys()) | set(that.keys())}
     else:
         return this + that
         
@@ -40,20 +40,18 @@ def _merge(x, y):
             _merge_dictionaries(d0, d1))
                 
 # Populates chord frequencies for a song
-def populate_chords(song, is_major):
+def populate_chords(song):
     # Initial information
     chord_types = util.chord_names
     note_types = util.note_names    
     
     unigrams = {chord_1:0 for chord_1 in chord_types}
-    bigrams = {chord_1:{chord_2:0 for chord_2 in note_types} for chord_1 in chord_types}
-    trigrams = {chord_1:{chord_2:{chord_3:0 for chord_3 in note_types} for chord_2 in note_types} for chord_1 in chord_types}
+    bigrams = {chord_1:{chord_2:0 for chord_2 in chord_types} for chord_1 in chord_types}
+    trigrams = {chord_1:{chord_2:{chord_3:0 for chord_3 in chord_types} for chord_2 in chord_types} for chord_1 in chord_types}
     given = {chord_1:{note_1:0 for note_1 in note_types} for chord_1 in chord_types}
 
     # Get the key
-    key = song.analyze('key')
-    if(util.is_major(key) != is_major):
-        return (unigrams, bigram, trigrams, given)
+    key = song.analyze('key')    
 
     # Apply the naive chord algorithm
     chords_naive = song.chordify()
@@ -76,7 +74,7 @@ def populate_chords(song, is_major):
         
     # Note probabilities per chord   
     for chord_name, note_names in zip(chord_names, note_names_list):
-        for note_name in notes:
+        for note_name in note_names:
             given[chord_name][note_name] += 1
 
     return (unigrams, bigrams, trigrams, given)
@@ -94,8 +92,6 @@ def populate_notes(song):
     
     # Get the key
     key = song.analyze('key')
-    if(util.is_major(key) != is_major):
-        return (unigrams, bigram, trigrams, given)
 
     # Apply the naive chord algorithm
     chords_naive = song.chordify()
@@ -120,18 +116,20 @@ def populate_notes(song):
         
     # Chord probabilities per note    
     for chord_name, note_names in zip(chord_names, note_names_list):
-        for note_name in notes:
+        for note_name in note_names:
             given[note_name][chord_name] += 1
 
     return (unigrams, bigrams, trigrams, given)
     
 # Reads a corpus, from a particular composer, using a particular populator function
-def read_corpus(composer, populate, is_major, debug=False):
+def read_corpus(composer, populate, filter=None, debug=False):
     information = ({}, {}, {}, {})
     for path in corpus.getComposer(composer):
         if debug:
             print('Parsing {} ...'.format(path))
         song = corpus.parse(path)
-        information = _merge(information, populate(song, is_major))
+        if filter != None and not filter(song):
+            continue
+        information = _merge(information, populate(song))
     return _convert_frequency_to_probability(information)
             

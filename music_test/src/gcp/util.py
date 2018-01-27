@@ -27,62 +27,61 @@ def _total(item):
     return sum(_total(i) for i in item.values()) if type(item) is dict else item
 
 # Unigrams
-chords_unigrams = transform.import_JSON('json/chord_unigrams.json')
+chords_unigrams = transform.import_JSON('json/chords_unigrams.json')
     
 # Bigrams
-chords_bigrams = transform.import_JSON('json/chord_bigrams.json')
+chords_bigrams = transform.import_JSON('json/chords_bigrams.json')
     
 # Trigrams
-chords_trigrams = transform.import_JSON('json/chord_trigrams.json')
+chords_trigrams = transform.import_JSON('json/chords_trigrams.json')
     
 # Note probabilites per chord
-chords_given = transform.import_JSON('json/chord_given.json')
+chords_given = transform.import_JSON('json/chords_given.json')
     
 # Unigrams
-notes_unigrams = transform.import_JSON('json/note_unigrams.json')
+notes_unigrams = transform.import_JSON('json/notes_unigrams.json')
     
 # Bigrams
-notes_bigrams = transform.import_JSON('json/note_bigrams.json')
+notes_bigrams = transform.import_JSON('json/notes_bigrams.json')
     
 # Trigrams
-notes_trigrams = transform.import_JSON('json/note_trigrams.json')
+notes_trigrams = transform.import_JSON('json/notes_trigrams.json')
     
 # Chord probabilites per note
-notes_given = transform.import_JSON('json/note_given.json')
+notes_given = transform.import_JSON('json/notes_given.json')
 
 # Unigrams
-chords_major_unigrams = transform.import_JSON('json/chord_major_unigrams.json')
+chords_major_unigrams = transform.import_JSON('json/chords_major_unigrams.json')
     
 # Bigrams
-chords_major_bigrams = transform.import_JSON('json/chord_major_bigrams.json')
+chords_major_bigrams = transform.import_JSON('json/chords_major_bigrams.json')
     
 # Trigrams
-chords_major_trigrams = transform.import_JSON('json/chord_major_trigrams.json')
+chords_major_trigrams = transform.import_JSON('json/chords_major_trigrams.json')
     
 # Note probabilites per chord
-chords_major_given = transform.import_JSON('json/chord_major_given.json')
+chords_major_given = transform.import_JSON('json/chords_major_given.json')
 
 # Unigrams
-chords_minor_unigrams = transform.import_JSON('json/chord_minor_unigrams.json')
+chords_minor_unigrams = transform.import_JSON('json/chords_minor_unigrams.json')
     
 # Bigrams
-chords_minor_bigrams = transform.import_JSON('json/chord_minor_bigrams.json')
+chords_minor_bigrams = transform.import_JSON('json/chords_minor_bigrams.json')
     
 # Trigrams
-chords_minor_trigrams = transform.import_JSON('json/chord_minor_trigrams.json')
+chords_minor_trigrams = transform.import_JSON('json/chords_minor_trigrams.json')
     
 # Note probabilites per chord
-chords_minor_given = transform.import_JSON('json/chord_minor_given.json')
+chords_minor_given = transform.import_JSON('json/chords_minor_given.json')
 
-#assert isclose(_total(chord_unigrams), 1.0)
-#assert isclose(_total(chord_bigrams), 1.0)
-#assert isclose(_total(chord_trigrams), 1.0)
-#print(_total(chord_given))
-#assert isclose(_total(chord_given), 1.0)
-#assert isclose(_total(note_unigrams), 1.0)
-#assert isclose(_total(note_bigrams), 1.0)
-#assert isclose(_total(note_trigrams), 1.0)
-#assert isclose(_total(note_given), 1.0)
+assert isclose(_total(chords_unigrams), 1.0)
+assert isclose(_total(chords_bigrams), 1.0)
+assert isclose(_total(chords_trigrams), 1.0)
+assert all(isclose(_total(values), 1.0) for key, values in chords_given.items())
+assert isclose(_total(notes_unigrams), 1.0)
+assert isclose(_total(notes_bigrams), 1.0)
+assert isclose(_total(notes_trigrams), 1.0)
+assert all(isclose(_total(values), 1.0) for key, values in notes_given.items())
 
 def note_name(note_name):
     alt_note_names_1 = ['B#', 'D-', 'C##', 'E-', 'F-', 'E#', 'G-', 'F##', 'A-', 'G##', 'B-', 'C-']    

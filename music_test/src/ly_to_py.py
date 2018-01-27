@@ -21,12 +21,17 @@ import json
 #environment.set('musicxmlPath', '/mnt/c/Users/garrett-may/Desktop/music_test')
 #environment.set('midiPath', '/mnt/c/Users/garrett-may/Desktop/music_test')
 
+#chords.read_chords_corpus(debug=True)
+#counterpoint.read_notes_corpus(debug=True)
+
+
 filename = sys.argv[1]
 song = transform.import_mid(filename)
 transform.populate_measures(song)
 orig_melody = [note for bar in song.elements for note in bar]
 melody = [note for bar in song.elements for note in bar if type(note) == Note]
-chords = chords.algorithm(melody, algorithm=genetic)
+#chords = chords.algorithm(melody, algorithm=viterbi)
+chords = reversed(chords.algorithm([note for note in reversed(melody)], algorithm=viterbi))
 #viterbi.algorithm_melody(chords)
 
 # Add a new part
