@@ -17,6 +17,8 @@ from gcp import counterpoint as counterpoint
 from gcp import genetic
 from gcp import viterbi
 import json
+import numpy as np
+
 
 #environment.set('musicxmlPath', '/mnt/c/Users/garrett-may/Desktop/music_test')
 #environment.set('midiPath', '/mnt/c/Users/garrett-may/Desktop/music_test')
@@ -24,20 +26,28 @@ import json
 #chords.read_chords_corpus(debug=True)
 #counterpoint.read_notes_corpus(debug=True)
 
-
+def equalise_interval(melody):
+    interval = 0.25
+    new_melody = [[elem] + ['_' for i in np.arange(interval, elem.quarterLength, interval)] for elem in melody]
+    return new_melody
+    
 filename = sys.argv[1]
 song = transform.import_mid(filename)
 transform.populate_measures(song)
 orig_melody = [note for bar in song.elements for note in bar]
 melody = [note for bar in song.elements for note in bar if type(note) == Note]
-#chords = chords.algorithm(melody, algorithm=viterbi)
-chords = reversed(chords.algorithm([note for note in reversed(melody)], algorithm=viterbi))
-#viterbi.algorithm_melody(chords)
+
+#print(equalise_interval(orig_melody))
+
+chords = chords.algorithm(melody, algorithm=viterbi)
+#chords = reversed(chords.algorithm([note for note in reversed(melody)], algorithm=viterbi))
+mel = counterpoint.algorithm(chords, algorithm=viterbi)
 
 # Add a new part
 tune = Part()
 accompaniment = Part()
 key = song.analyze('key')
+print(key)
 counter = 0
 for index, chord_1 in enumerate(chords):
     while type(orig_melody[counter]) != Note:

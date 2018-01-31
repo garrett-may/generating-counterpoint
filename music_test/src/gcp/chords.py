@@ -1,3 +1,4 @@
+from music21.key import Key
 from gcp import corpus
 from gcp import transform
 from gcp import util
@@ -36,4 +37,5 @@ def algorithm(melody, algorithm):
                                             util.chords_major_trigrams, util.chords_major_given) if is_major else \
                                             (util.chords_minor_unigrams, util.chords_minor_bigrams,
                                             util.chords_minor_trigrams, util.chords_minor_given)
-    return algorithm.algorithm([note.name for note in melody], unigrams, bigrams, given)
+    transposed_melody = util.notes_names([note.name for note in melody], util.key(melody))
+    return algorithm.algorithm(transposed_melody, unigrams, bigrams, given)

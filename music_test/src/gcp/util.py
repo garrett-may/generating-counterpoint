@@ -94,7 +94,7 @@ def interval(key):
     return (note_names.index(note_name(key.tonic.name)) - note_names.index('C')) % octave
        
 def notes_names(notes, key):
-    return map(lambda n: note_names[(note_names.index(note_name(n)) - interval(key)) % octave], map(note_name, notes))
+    return [note_names[(note_names.index(note_name(n)) - interval(key)) % octave] for n in map(note_name, notes)]
     
 def roman(chord, key):
     return romanNumeralFromChord(chord, key).romanNumeral
