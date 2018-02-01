@@ -7,7 +7,7 @@ def read_notes_corpus(composer='bach', debug=False):
         return util.is_major(song.analyze('key'))
 
     # All
-    (unigrams, bigrams, trigrams, given) = corpus.read_corpus(composer, corpus.populate_notes, filter=None, debug=debug)
+    (unigrams, bigrams, trigrams, given) = corpus.read_corpus(composer, corpus.populate_notes, filt=None, debug=debug)
    
     transform.export_JSON('json/notes_unigrams.json', unigrams)
     transform.export_JSON('json/notes_bigrams.json', bigrams)
@@ -15,7 +15,7 @@ def read_notes_corpus(composer='bach', debug=False):
     transform.export_JSON('json/notes_given.json', given)
         
     # Major
-    (unigrams, bigrams, trigrams, given) = corpus.read_corpus(composer, corpus.populate_notes, filter=lambda song: is_major(song), debug=debug)
+    (unigrams, bigrams, trigrams, given) = corpus.read_corpus(composer, corpus.populate_notes, filt=lambda song: is_major(song), debug=debug)
    
     transform.export_JSON('json/notes_major_unigrams.json', unigrams)
     transform.export_JSON('json/notes_major_bigrams.json', bigrams)
@@ -23,7 +23,7 @@ def read_notes_corpus(composer='bach', debug=False):
     transform.export_JSON('json/notes_major_given.json', given)
 
     # Minor
-    (unigrams, bigrams, trigrams, given) = corpus.read_corpus(composer, corpus.populate_notes, filter=lambda song: not is_major(song), debug=debug)
+    (unigrams, bigrams, trigrams, given) = corpus.read_corpus(composer, corpus.populate_notes, filt=lambda song: not is_major(song), debug=debug)
    
     transform.export_JSON('json/notes_minor_unigrams.json', unigrams)
     transform.export_JSON('json/notes_minor_bigrams.json', bigrams)

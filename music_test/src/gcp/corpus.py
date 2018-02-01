@@ -122,13 +122,14 @@ def populate_notes(song):
     return (unigrams, bigrams, trigrams, given)
     
 # Reads a corpus, from a particular composer, using a particular populator function
-def read_corpus(composer, populate, filter=None, debug=False):
+def read_corpus(composer, populate, filt=None, debug=False):
     information = ({}, {}, {}, {})
     for path in corpus.getComposer(composer):
+    #for path in filter(lambda p: 'bwv248.42-4.mxl' in p, corpus.getComposer(composer)):
         if debug:
             print('Parsing {} ...'.format(path))
         song = corpus.parse(path)
-        if filter != None and not filter(song):
+        if filt != None and not filt(song):
             continue
         information = _merge(information, populate(song))
     return _convert_frequency_to_probability(information)

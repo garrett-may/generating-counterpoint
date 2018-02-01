@@ -1,7 +1,7 @@
 from gcp import util
 
 # Apply the Viterbi algorithm to find the most probable sequence
-def _viterbi(obs, states, start_p, trans_p, emit_p, evaluate=None):
+def _viterbi(obs, states, start_p, trans_p, emit_p, evaluate=None):   
     V = [{}]
     for st in states:
         V[0][st] = {"prob": start_p[st] * emit_p[st][obs[0]], "prev": None}
@@ -11,7 +11,7 @@ def _viterbi(obs, states, start_p, trans_p, emit_p, evaluate=None):
     # Run Viterbi when t > 0
     for t in range(1, len(obs)):
         V.append({})
-        for st in states:
+        for st in states:            
             max_tr_prob = max(V[t-1][prev_st]["prob"]*trans_p[prev_st][st] for prev_st in states)
             for prev_st in states:
                 if V[t-1][prev_st]["prob"] * trans_p[prev_st][st] == max_tr_prob:
