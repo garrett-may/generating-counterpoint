@@ -21,10 +21,11 @@ import json
 
 #environment.set('musicxmlPath', '/mnt/c/Users/garrett-may/Desktop/music_test')
 #environment.set('midiPath', '/mnt/c/Users/garrett-may/Desktop/music_test')
-rhythm.read_rhythms_corpus(debug=True)
+#rhythm.read_rhythms_corpus(debug=True)
 #chords.read_chords_corpus(debug=True)
 #counterpoint.read_notes_corpus(debug=True)
-"""
+
+
 filename = sys.argv[1]
 song = transform.import_mid(filename)
 transform.populate_measures(song)
@@ -63,4 +64,3 @@ score = Score()
 score.insert(0, tune)
 score.insert(0, accompaniment)
 transform.export_mid(score, filename)
-"""
