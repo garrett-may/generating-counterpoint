@@ -38,4 +38,5 @@ def algorithm(melody, algorithm):
                                             (util.chords_minor_unigrams, util.chords_minor_bigrams,
                                             util.chords_minor_trigrams, util.chords_minor_given)
     transposed_melody = util.notes_names([note.name for note in melody], util.key(melody))
-    return algorithm.algorithm(transposed_melody, unigrams, bigrams, given)
+    #return algorithm.algorithm(transposed_melody, unigrams, bigrams, given)
+    return algorithm.algorithm(transposed_melody, transform.import_JSON('json/chords_true_unigrams.json'), transform.import_JSON('json/chords_true_bigrams.json'), given)

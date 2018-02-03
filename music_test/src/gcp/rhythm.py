@@ -18,30 +18,6 @@ def pprint(ls, tab=0):
             pprint(elem, tab+4)
     else:
         print('{}{}'.format(indent, ls))
-
-def equalise_interval(melody):
-    interval = 0.0625
-    new_melody = []
-    for elem in melody:
-        if type(elem) is not Rest:
-            new_melody += [elem] + [Hold() for i in np.arange(interval, elem.quarterLength, interval)]
-        else:
-            new_melody += [Rest(interval) for i in np.arange(0.0, elem.quarterLength, interval)]
-    return new_melody
-    
-def get_equalised_parts(song):
-    new_parts = []
-    interval = 0.0625
-    parts = [[[elem for elem in bar if type(elem) in [Note, Chord, Rest]] for bar in part.getElementsByClass('Measure')] for part in song.getElementsByClass('Part')]
-    
-    for index, _ in enumerate(parts[0]):
-        bars = [equalise_interval(part[index]) for part in parts]
-        bar_length = max([len(bar) for bar in bars])
-        bars = [bar + [Rest(interval * (bar_length - len(bar)))] for bar in bars]
-        for i, part in enumerate(parts):
-            part[index] = bars[i]
-            
-    return parts
     
 def next_notes(elems, last_notes):
     curr_notes = []
@@ -86,11 +62,7 @@ def populate_rhythms(song):
     chord_names = [util.roman(chord, key) for chord in chords]
     note_names_list = [util.notes_names([note.name for note in chord], key) for chord in chords]
     
-    parts = get_equalised_parts(song)
-    #parts = [part.flat for part in song.getElementsByClass('Part')]
-    #parts = [[elem for elem in part if type(elem) in [Note, Chord, Rest]] for part in parts]
-    #parts = [equalise_interval(part) for part in parts]
-    #parts = [[elem for ls in part for elem in ls] for part in parts]
+    parts = util.flatten_equalised_parts(song)
     
     for part in parts:
         part = [rhythm_mapping[type(elem)] for ls in part for elem in ls]

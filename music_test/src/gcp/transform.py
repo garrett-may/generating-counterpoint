@@ -13,6 +13,10 @@ def import_mid(filename):
     print('End parsing')
     return song
     
+# Exports music21 song to .mid
+def export_mid(song, filename):
+    song.write('midi', filename + '.mid')
+    
 # Exports music21 song to .ly
 def export_ly(song, filename):
     lpc = lily.translate.LilypondConverter()
@@ -23,8 +27,17 @@ def export_ly(song, filename):
     with open(filename + '.ly', 'w') as file:
         file.write(str(lpc.context))
         
-def export_mid(song, filename):
-    song.write('midi', filename + '.mid')
+# Imports .json to Python dict
+def import_JSON(filename):
+    with open(filename, 'r') as fp:
+        r = json.load(fp)
+    return r
+    
+# Exports Python dict to .json    
+def export_JSON(filename, w):
+    js = json.dumps(w)
+    with open(filename, 'w') as fp:
+        fp.write(js)
         
 # Some LilyPond files won't populate the measures/bars
 # If this is the case, populate them
@@ -93,12 +106,30 @@ def populate_measures(song):
         song.append(measure)
     return song
     
-def import_JSON(filename):
-    with open(filename, 'r') as fp:
-        r = json.load(fp)
-    return r
+# Transforms melodies such that they are incremented by equal time intervals
+# E.g. A crotchet may be split into [Note, Hold, Hold, Hold], where each element
+# has a time interval of a semiquaver        
+def equalise_interval(melody, interval):    
+    def parse_elem(elem):
+        return ([elem] + [Hold() for i in np.arange(interval, elem.quarterLength, interval)] if type(elem) is not Rest else
+                [Rest(interval) for i in np.arange(0.0, elem.quarterLength, interval)])    
     
-def export_JSON(filename, w):
-    js = json.dumps(w)
-    with open(filename, 'w') as fp:
-        fp.write(js)
+    return [e for elem in melody for e in parse_elem(elem)]
+    
+# Flattens a song into melodies, and then time interval equalises them
+def flatten_equalised_parts(song, interval=0.0625):
+    # Only look at notes, chords, and rests (not e.g. time signature, key signature, page layouts)
+    parts = [[[elem for elem in bar if type(elem) in [Note, Chord, Rest]] for bar in part.getElementsByClass('Measure')] for part in song.getElementsByClass('Part')]
+    
+    # Fix melodies with errors
+    for index, _ in enumerate(parts[0]):
+        # Get the current bars
+        bars = [equalise_interval(part[index], interval) for part in parts]
+        bar_length = max([len(bar) for bar in bars])
+        # Fix bars which for some reason don't fill the whole bar
+        # Add rests instead
+        bars = [bar + [Rest(interval * (bar_length - len(bar)))] for bar in bars]
+        for i, part in enumerate(parts):
+            part[index] = bars[i]
+            
+    return parts
