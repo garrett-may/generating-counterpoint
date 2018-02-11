@@ -29,6 +29,14 @@ import json
 filename = sys.argv[1]
 song = transform.import_mid(filename)
 transform.populate_measures(song)
+for index in range(0, len(song.elements) - 3, 1):
+    part = Part()
+    part.append(song.elements[index])
+    part.append(song.elements[index+1])
+    part.append(song.elements[index+2])
+    part.append(song.elements[index+3])
+    #print(analysis.discrete.KrumhanslSchmuckler().getWeights())
+    print(part.analyze('key'))
 orig_melody = [note for bar in song.elements for note in bar]
 melody = [note for bar in song.elements for note in bar if type(note) == Note]
 
@@ -55,7 +63,8 @@ for index, chord_1 in enumerate(chords):
     rn = roman.RomanNumeral(chord_1, key)
     chord = Chord([pitch.name + '3' for pitch in rn.pitches])
     chord.quarterLength = melody[index].quarterLength
-    #chord = chord.transpose(interval.Interval(-24))
+    note = Note(mel[index] + '3')
+    note.quarterLength = melody[index].quarterLength
     accompaniment.append(chord)
     tune.append(melody[index])
     counter += 1
@@ -64,3 +73,4 @@ score = Score()
 score.insert(0, tune)
 score.insert(0, accompaniment)
 transform.export_mid(score, filename)
+

@@ -1,10 +1,15 @@
 from music21 import converter
 from music21.note import *
+from music21.chord import Chord
 from collections import Iterable
 from music21.meter import TimeSignature
 from music21.stream import Measure
 from music21 import lily
 import json
+import numpy as np
+
+class Hold:
+    pass
 
 # Imports .mid to music21 song
 def import_mid(filename):

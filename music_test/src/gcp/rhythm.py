@@ -2,11 +2,9 @@ from music21.note import Note, Rest
 from music21.chord import Chord
 from gcp import corpus
 from gcp import transform
+from gcp.transform import Hold
 from gcp import util
 import numpy as np
-
-class Hold:
-    pass
     
 def pprint(ls, tab=0):
     indent = ""
@@ -62,7 +60,7 @@ def populate_rhythms(song):
     chord_names = [util.roman(chord, key) for chord in chords]
     note_names_list = [util.notes_names([note.name for note in chord], key) for chord in chords]
     
-    parts = util.flatten_equalised_parts(song)
+    parts = transform.flatten_equalised_parts(song)
     
     for part in parts:
         part = [rhythm_mapping[type(elem)] for ls in part for elem in ls]
@@ -120,4 +118,4 @@ def read_rhythms_corpus(composer='bach', debug=False):
     
 def algorithm(chords, algorithm):
     (unigrams, bigrams, trigrams, given) = (transform.import_JSON('json/rhythms_major_unigrams.json'), transform.import_JSON('json/rhythms_major_bigrams.json'), transform.import_JSON('json/rhythms_major_trigrams.json'), transform.import_JSON('json/rhythms_major_given.json'))
-    return algorithm.algorithm(chords, unigrams, bigrams, given)
+    return algorithm.algorithm(chords, unigrams, bigrams, trigrams, given)

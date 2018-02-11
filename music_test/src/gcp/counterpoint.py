@@ -32,4 +32,4 @@ def read_notes_corpus(composer='bach', debug=False):
    
 def algorithm(chords, algorithm):
     (unigrams, bigrams, trigrams, given) = (util.notes_unigrams, util.notes_bigrams, util.notes_trigrams, util.notes_given)
-    return algorithm.algorithm(chords, unigrams, bigrams, given)
+    return algorithm.algorithm(chords, unigrams, bigrams, trigrams, given)

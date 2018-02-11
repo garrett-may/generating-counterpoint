@@ -37,6 +37,6 @@ def algorithm(melody, algorithm):
                                             util.chords_major_trigrams, util.chords_major_given) if is_major else \
                                             (util.chords_minor_unigrams, util.chords_minor_bigrams,
                                             util.chords_minor_trigrams, util.chords_minor_given)
-    transposed_melody = util.notes_names([note.name for note in melody], util.key(melody))
-    #return algorithm.algorithm(transposed_melody, unigrams, bigrams, given)
-    return algorithm.algorithm(transposed_melody, transform.import_JSON('json/chords_true_unigrams.json'), transform.import_JSON('json/chords_true_bigrams.json'), given)
+    transposed_melody = util.notes_names([note for note in melody], util.key(melody))
+    return algorithm.algorithm(transposed_melody, unigrams, bigrams, trigrams, given)
+    #return algorithm.algorithm(transposed_melody, transform.import_JSON('json/chords_true_unigrams.json'), transform.import_JSON('json/chords_true_bigrams.json'), given)

@@ -75,14 +75,14 @@ chords_minor_trigrams = transform.import_JSON('json/chords_minor_trigrams.json')
 # Note probabilites per chord
 chords_minor_given = transform.import_JSON('json/chords_minor_given.json')
 
-assert isclose(_total(chords_unigrams), 1.0)
-assert isclose(_total(chords_bigrams), 1.0)
-assert isclose(_total(chords_trigrams), 1.0)
-assert all(isclose(_total(values), 1.0) or isclose(_total(values), 0.0) for key, values in chords_given.items())
-assert isclose(_total(notes_unigrams), 1.0)
-assert isclose(_total(notes_bigrams), 1.0)
-assert isclose(_total(notes_trigrams), 1.0)
-assert all(isclose(_total(values), 1.0) or isclose(_total(values), 0.0) for key, values in notes_given.items())
+#assert isclose(_total(chords_unigrams), 1.0)
+#assert isclose(_total(chords_bigrams), 1.0)
+#assert isclose(_total(chords_trigrams), 1.0)
+#assert all(isclose(_total(values), 1.0) or isclose(_total(values), 0.0) for key, values in chords_given.items())
+#assert isclose(_total(notes_unigrams), 1.0)
+#assert isclose(_total(notes_bigrams), 1.0)
+#assert isclose(_total(notes_trigrams), 1.0)
+#assert all(isclose(_total(values), 1.0) or isclose(_total(values), 0.0) for key, values in notes_given.items())
 
 def note_name(note_name):
     alt_note_names_1 = ['B#', 'D-', 'C##', 'E-', 'F-', 'E#', 'G-', 'F##', 'A-', 'G##', 'B-', 'C-']    
@@ -94,8 +94,8 @@ def note_name(note_name):
 def interval(key):
     return (note_names.index(note_name(key.tonic.name)) - note_names.index('C')) % octave
        
-def notes_names(notes, key):
-    return [note_names[(note_names.index(note_name(n)) - interval(key)) % octave] for n in map(note_name, notes)]
+def notes_names(notes, key, include_octave=False):
+    return [note_names[(note_names.index(note_name(n.name)) - interval(key)) % octave] + (str(n.octave) if include_octave else '') for n in notes]
     
 def chord_name(chord_name):
     alt_chord_names_1 = ['#VII', '-II', '?', '-III', '-IV', '#III', '-V', '?', '-VI', '?', '-VII', '-I',

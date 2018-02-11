@@ -58,7 +58,7 @@ def populate_chords(song):
     
     chords = chords_naive.flat.getElementsByClass('Chord')
     chord_names = [util.roman(chord, key) for chord in chords]
-    note_names_list = [util.notes_names([note.name for note in chord], key) for chord in chords]
+    note_names_list = [util.notes_names(chord, key) for chord in chords]
     
     # Chord unigrams
     for i in range(0, len(chord_names)):
@@ -82,7 +82,7 @@ def populate_chords(song):
 # Populates note frequencies for a song
 def populate_notes(song):
     # Initial information
-    note_types = util.note_names
+    note_types = [note_name + str(octave) for note_name in util.note_names for octave in range(0, 8)]
     chord_types = util.chord_names
     
     unigrams = {note_1:0 for note_1 in note_types}
@@ -98,9 +98,9 @@ def populate_notes(song):
     
     chords = chords_naive.flat.getElementsByClass('Chord')
     chord_names = [util.roman(chord, key) for chord in chords]
-    note_names_list = [util.notes_names([note.name for note in chord], key) for chord in chords]
+    note_names_list = [util.notes_names(chord, key, include_octave=True) for chord in chords]
     
-    part_names = [[util.note_name(note.name) for note in part.flat.getElementsByClass('Note')] for part in song.getElementsByClass('Part')]        
+    part_names = [util.notes_names(part.flat.getElementsByClass('Note'), key, include_octave=True) for part in song.getElementsByClass('Part')]        
     for note_names in part_names:    
         # Note unigrams
         for i in range(0, len(note_names)):
