@@ -88,7 +88,7 @@ def populate_notes(song):
     unigrams = {note_1:0 for note_1 in note_types}
     bigrams = {note_1:{note_2:0 for note_2 in note_types} for note_1 in note_types}
     trigrams = {note_1:{note_2:{note_3:0 for note_3 in note_types} for note_2 in note_types} for note_1 in note_types}
-    given = {note_1:{chord_1:0 for chord_1 in chord_types} for note_1 in note_types}
+    given = {note_1:{note_2:0 for note_2 in note_types} for note_1 in note_types}
     
     # Get the key
     key = song.analyze('key')
@@ -116,15 +116,18 @@ def populate_notes(song):
         
     # Chord probabilities per note    
     for chord_name, note_names in zip(chord_names, note_names_list):
+        #if len(note_names) > 1:
+        #    for note_name in note_names[1:]:
+        #        given[note_name][note_names[0]] += 1
         for note_name in note_names:
             given[note_name][chord_name] += 1
 
     return (unigrams, bigrams, trigrams, given)
     
 # Reads a corpus, from a particular composer, using a particular populator function
-def read_corpus(composer, populate, filt=None, debug=False):
+def read_corpus(corp, populate, filt=None, debug=False):
     information = ({}, {}, {}, {})
-    for path in corpus.getComposer(composer):
+    for path in corp:
     #for path in filter(lambda p: 'bwv248.42-4.mxl' in p, corpus.getComposer(composer)):
         if debug:
             print('Parsing {} ...'.format(path))

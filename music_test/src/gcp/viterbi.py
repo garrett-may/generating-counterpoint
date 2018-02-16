@@ -1,4 +1,5 @@
 from gcp import util
+import random
 
 # Apply the Viterbi algorithm to find the most probable sequence
 def _viterbi(obs, states, start_p, trans_p, emit_p, evaluate=None):   
@@ -39,9 +40,26 @@ def _viterbi(obs, states, start_p, trans_p, emit_p, evaluate=None):
     print('The steps of states are ' + ' '.join(opt) + ' with highest probability of '.format(max_prob))
     return opt
 
+def _max_prob(probs):
+    (max_tr_prob, c_1) = (-1.0, None)
+    for chord_1, tr_prob in probs:
+        if tr_prob > max_tr_prob:
+            (max_tr_prob, c_1) = (tr_prob, chord_1)
+    return (c_1, max_tr_prob)
     
+def _cumulative_distribution(probs):
+    states = sorted(probs, key=lambda pair: pair[1])
+    cumulative_dist = []
+    summed = 0.0
+    for elem,prob in states:
+        summed += prob
+        cumulative_dist += [(elem,summed)]
+    if summed > 0.0:
+        for index, (elem, prob) in enumerate(cumulative_dist):
+            cumulative_dist[index] = (elem, prob / summed)
+    return cumulative_dist
     
-def _viterbi_2(obs, chord_types, unigrams, bigrams, trigrams, given, evaluate=None):
+def _viterbi_2(obs, chord_types, unigrams, bigrams, trigrams, given, evaluate=None, rand=False):
     V= [{}]
     for chord_1 in chord_types:
         V[0][chord_1] = {'prob': unigrams[chord_1] * given[chord_1][obs[0]], 'prev': None}
@@ -49,23 +67,27 @@ def _viterbi_2(obs, chord_types, unigrams, bigrams, trigrams, given, evaluate=No
     #for t in range(1, len(obs)):
     V.append({})
     for chord_2 in chord_types:
-        (max_tr_prob, c_1) = (-1.0, None)
-        for chord_1 in chord_types:
-            tr_prob = V[t-1][chord_1]['prob'] * bigrams[chord_1][chord_2]
-            if tr_prob > max_tr_prob:
-                (max_tr_prob, c_1) = (tr_prob, chord_1)
+        tr_probs = [(chord_1, V[t-1][chord_1]['prob'] * bigrams[chord_1][chord_2]) for chord_1 in chord_types]
+        (c_1, max_tr_prob) = _max_prob(tr_probs)
         V[t][chord_2] = {'prob': max_tr_prob * given[chord_2][obs[t]], 'prev': c_1}
                         
     for t in range(2, len(obs)):
         V.append({})
         for chord_3 in chord_types:
-            (max_tr_prob, c_2) = (-1.0, None)
-            for chord_1 in chord_types:
-                for chord_2 in chord_types:
-                    tr_prob = V[t-1][chord_2]['prob'] * trigrams[chord_1][chord_2][chord_3]
-                    #tr_prob = V[t-2][chord_1]['prob'] * V[t-1][chord_2]['prob'] * bigrams[chord_2][chord_3]
-                    if tr_prob > max_tr_prob:
-                        (max_tr_prob, c_2) = (tr_prob, chord_2)
+            tr_probs = [(chord_2, V[t-1][chord_2]['prob'] * trigrams[chord_1][chord_2][chord_3]) for chord_1 in chord_types for chord_2 in chord_types]
+            
+            if not rand:                
+                (c_2, max_tr_prob) = _max_prob(tr_probs)
+            else:
+                tr_probs = [(chord_2, prob*prob) for chord_2, prob in tr_probs]
+                cumulative_dist = _cumulative_distribution(tr_probs)
+                r = random.random()
+                for (elem,prob) in cumulative_dist:
+                    if prob >= r:
+                        (c_2, max_tr_prob) = (elem, prob)
+                        break
+                else:
+                    (c_2, max_tr_prob) = cumulative_dist[-1]
             V[t][chord_3] = {'prob': max_tr_prob * given[chord_3][obs[t]], 'prev': c_2}
             
     opt = []                            
@@ -87,9 +109,9 @@ def _viterbi_2(obs, chord_types, unigrams, bigrams, trigrams, given, evaluate=No
     return opt
     
 # Algorithm
-def algorithm(sequence, unigrams, bigrams, trigrams, given, evaluate=None):
+def algorithm(sequence, unigrams, bigrams, trigrams, given, evaluate=None, rand=False):
     if trigrams == None:
         return _viterbi(sequence, [elem for elem in unigrams.keys()], unigrams, bigrams, given, evaluate)
     else:
-        return _viterbi_2(sequence, [elem for elem in unigrams.keys()], unigrams, bigrams, trigrams, given, evaluate)
+        return _viterbi_2(sequence, [elem for elem in unigrams.keys()], unigrams, bigrams, trigrams, given, evaluate, rand)
     

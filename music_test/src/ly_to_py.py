@@ -9,6 +9,7 @@ from music21.chord import *
 from music21.roman import *
 from music21.pitch import *
 from music21.interval import *
+from music21.corpus import getComposer
 
 from gcp import util
 from gcp import transform
@@ -21,9 +22,12 @@ import json
 
 #environment.set('musicxmlPath', '/mnt/c/Users/garrett-may/Desktop/music_test')
 #environment.set('midiPath', '/mnt/c/Users/garrett-may/Desktop/music_test')
-#rhythm.read_rhythms_corpus(debug=True)
-#chords.read_chords_corpus(debug=True)
-#counterpoint.read_notes_corpus(debug=True)
+#corp = getComposer('bach')
+#excluded = ['bwv227.11.mxl', 'bwv248.23-2.mxl', 'bwv248.42-4.mxl', 'bwv377.mxl', 'bwv8.6.mxl', 'bwv846.mxl']
+#corp = [path for path in corp if not any(ex in path for ex in excluded)]
+#rhythm.read_rhythms_corpus(corp, debug=True)
+#chords.read_chords_corpus(corp, debug=True)
+#counterpoint.read_notes_corpus(corp, debug=True)
 
 
 filename = sys.argv[1]
@@ -44,13 +48,62 @@ melody = [note for bar in song.elements for note in bar if type(note) == Note]
 
 chords = chords.algorithm(melody, algorithm=viterbi)
 #chords = reversed(chords.algorithm([note for note in reversed(melody)], algorithm=viterbi))
-mel = counterpoint.algorithm(chords, algorithm=viterbi)
-rhy = rhythm.algorithm(chords, algorithm=viterbi)
+mel = counterpoint.algorithm(melody, algorithm=viterbi)
+rhy = rhythm.algorithm(melody, algorithm=viterbi)
 
 # Add a new part
 tune = Part()
 accompaniment = Part()
 key = song.analyze('key')
+
+current_note = None
+last_rhythm_type = '????'
+rhythm_length = 0.0
+bar_length = 0.0
+new_melody = []
+interval = 0.0625
+time_sig = 4.0
+for rhythm_type in rhy:
+    if rhythm_type != last_rhythm_type:
+        if rhythm_type != 'Hold' and current_note != None:
+            if bar_length + rhythm_length > time_sig:
+                current_note.quarterLength = time_sig - bar_length
+                rhythm_length -= (time_sig - bar_length)
+                bar_length = 0.0
+            else:
+                current_note.quarterLength = rhythm_length
+            
+            new_melody += [current_note]
+    if rhythm_type == 'Note':
+        # Do something
+        current_note = Note('C3')
+        rhythm_length = interval
+    elif rhythm_type == 'Hold':
+        # Do something
+        if current_note != None:
+            rhythm_length += interval
+    elif rhythm_type == 'Rest':
+        # Do something
+        if last_rhythm_type == 'Rest':
+            rhythm_length += interval
+        else:
+            current_note = Rest()
+            rhythm_length = interval
+    last_rhythm_type = rhythm_type
+if current_note != None:
+    if bar_length + rhythm_length > time_sig:
+        current_note.quarterLength = time_sig - bar_length
+        rhythm_length -= (time_sig - bar_length)
+        bar_length = 0.0
+    else:
+        current_note.quarterLength = rhythm_length
+    
+    new_melody += [current_note]   
+    
+tune = util.part(orig_melody)
+accompaniment = util.part(new_melody)
+
+"""
 print(key)
 counter = 0
 for index, chord_1 in enumerate(chords):
@@ -63,14 +116,18 @@ for index, chord_1 in enumerate(chords):
     rn = roman.RomanNumeral(chord_1, key)
     chord = Chord([pitch.name + '3' for pitch in rn.pitches])
     chord.quarterLength = melody[index].quarterLength
-    note = Note(mel[index] + '3')
+    note = Note(mel[index])
     note.quarterLength = melody[index].quarterLength
-    accompaniment.append(chord)
+    accompaniment.append(note)
     tune.append(melody[index])
     counter += 1
-    
+""" 
+
 score = Score()
 score.insert(0, tune)
 score.insert(0, accompaniment)
 transform.export_mid(score, filename)
+transform.export_ly(score, filename)
+transform.export_pdf(score, filename)
+
 

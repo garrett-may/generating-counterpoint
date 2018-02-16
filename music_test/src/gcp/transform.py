@@ -43,6 +43,15 @@ def export_JSON(filename, w):
     js = json.dumps(w)
     with open(filename, 'w') as fp:
         fp.write(js)
+    
+# Exports music21 song to .pdf    
+def export_pdf(song, filename):
+    lpc = lily.translate.LilypondConverter()
+    lpMusicList = lily.lilyObjects.LyMusicList()
+    lpc.context = lpMusicList
+    lpc.appendObjectsToContextFromStream(song)
+    
+    lpc.createPDF(filename)
         
 # Some LilyPond files won't populate the measures/bars
 # If this is the case, populate them
@@ -114,7 +123,7 @@ def populate_measures(song):
 # Transforms melodies such that they are incremented by equal time intervals
 # E.g. A crotchet may be split into [Note, Hold, Hold, Hold], where each element
 # has a time interval of a semiquaver        
-def equalise_interval(melody, interval):    
+def equalise_interval(melody, interval=0.0625):    
     def parse_elem(elem):
         return ([elem] + [Hold() for i in np.arange(interval, elem.quarterLength, interval)] if type(elem) is not Rest else
                 [Rest(interval) for i in np.arange(0.0, elem.quarterLength, interval)])    
@@ -123,8 +132,8 @@ def equalise_interval(melody, interval):
     
 # Flattens a song into melodies, and then time interval equalises them
 def flatten_equalised_parts(song, interval=0.0625):
-    # Only look at notes, chords, and rests (not e.g. time signature, key signature, page layouts)
-    parts = [[[elem for elem in bar if type(elem) in [Note, Chord, Rest]] for bar in part.getElementsByClass('Measure')] for part in song.getElementsByClass('Part')]
+    # Only look at notes, and rests (not e.g. chords, time signature, key signature, page layouts)
+    parts = [[[elem for elem in bar if type(elem) in [Note, Rest]] for bar in part.getElementsByClass('Measure')] for part in song.getElementsByClass('Part')]
     
     # Fix melodies with errors
     for index, _ in enumerate(parts[0]):
