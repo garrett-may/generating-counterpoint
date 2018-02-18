@@ -1,4 +1,4 @@
-\new Staff  = xzfebfaaxcdacxc { r 4  
+\new Staff  = xawccywyzcexewe { r 4  
       r 4  
       g 8  
       g 8  
@@ -29,29 +29,35 @@
        } 
      
  
-\new Staff  = xzfebfabwwdfzye { c 8  
+\new Staff  = xawccxdawzacxce { c 8  
       c 4  
       c 4  
       c 4  
-      c 2  
-      c 8  
-      c 8  
-      c 4  
-      c 4  
-      c 4  
-      c 2  
-      c 8  
-      c 8  
-      c 4  
-      c 4  
-      c 2.  
-      c 4  
-      c 4  
+      c 32  
+      c 4  ~  
+      c 8  ~  
       c 16  ~  
       c 64  
-      c 8  ~  
-      c 32.  
+      r 64  
+      c 8  
+      c 8  
       c 2  
+      c 4  
+      c 2  
+      c 8  
+      c 8  
+      c 4  
+      c 4  
+      c 4  
+      c 4  
+      c 4  
+      c 8  
+      c 8  
+      c 4  
+      c 4  
+      c 4  
+      c 4  
+      r 2  
        } 
      
  

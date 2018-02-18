@@ -14,7 +14,7 @@ class Hold:
 # Imports .mid to music21 song
 def import_mid(filename):
     print('Start parsing...')
-    song = converter.parse(filename)
+    song = converter.parse(filename + '.mid')
     print('End parsing')
     return song
     

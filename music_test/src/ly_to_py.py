@@ -49,7 +49,7 @@ melody = [note for bar in song.elements for note in bar if type(note) == Note]
 chords = chords.algorithm(melody, algorithm=viterbi)
 #chords = reversed(chords.algorithm([note for note in reversed(melody)], algorithm=viterbi))
 mel = counterpoint.algorithm(melody, algorithm=viterbi)
-rhy = rhythm.algorithm(melody, algorithm=viterbi)
+rhy = rhythm.algorithm(orig_melody, algorithm=viterbi)
 
 # Add a new part
 tune = Part()
@@ -126,8 +126,8 @@ for index, chord_1 in enumerate(chords):
 score = Score()
 score.insert(0, tune)
 score.insert(0, accompaniment)
-transform.export_mid(score, filename)
-transform.export_ly(score, filename)
-transform.export_pdf(score, filename)
+transform.export_mid(score, '../mid/' + filename + '_gcp')
+transform.export_ly(score, '../ly/' + filename + '_gcp')
+transform.export_pdf(score, '../pdf/' + filename + '_gcp')
 
 
