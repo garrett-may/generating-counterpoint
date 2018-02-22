@@ -48,14 +48,15 @@ melody = [note for bar in song.elements for note in bar if type(note) == Note]
 
 chords = chords.algorithm(melody, algorithm=viterbi)
 #chords = reversed(chords.algorithm([note for note in reversed(melody)], algorithm=viterbi))
-mel = counterpoint.algorithm(melody, algorithm=viterbi)
+mel = counterpoint.algorithm(melody, chords, algorithm=viterbi)
+print(mel)
 rhy = rhythm.algorithm(orig_melody, algorithm=viterbi)
 
 # Add a new part
 tune = Part()
 accompaniment = Part()
 key = song.analyze('key')
-
+"""
 current_note = None
 last_rhythm_type = '????'
 rhythm_length = 0.0
@@ -102,8 +103,8 @@ if current_note != None:
     
 tune = util.part(orig_melody)
 accompaniment = util.part(new_melody)
-
 """
+
 print(key)
 counter = 0
 for index, chord_1 in enumerate(chords):
@@ -121,7 +122,6 @@ for index, chord_1 in enumerate(chords):
     accompaniment.append(note)
     tune.append(melody[index])
     counter += 1
-""" 
 
 score = Score()
 score.insert(0, tune)

@@ -27,53 +27,8 @@ circle_of_fifths = [note * 7 % octave for note in chromatic_scale]
 def _total(item):
     return sum(_total(i) for i in item.values()) if type(item) is dict else item
 
-# Unigrams
-chords_unigrams = transform.import_JSON('json/chords_unigrams.json')
-    
-# Bigrams
-chords_bigrams = transform.import_JSON('json/chords_bigrams.json')
-    
-# Trigrams
-chords_trigrams = transform.import_JSON('json/chords_trigrams.json')
-    
-# Note probabilites per chord
-chords_given = transform.import_JSON('json/chords_given.json')
-    
-# Unigrams
-notes_unigrams = transform.import_JSON('json/notes_unigrams.json')
-    
-# Bigrams
-notes_bigrams = transform.import_JSON('json/notes_bigrams.json')
-    
-# Trigrams
-notes_trigrams = transform.import_JSON('json/notes_trigrams.json')
-    
-# Chord probabilites per note
-notes_given = transform.import_JSON('json/notes_given.json')
 
-# Unigrams
-chords_major_unigrams = transform.import_JSON('json/chords_major_unigrams.json')
-    
-# Bigrams
-chords_major_bigrams = transform.import_JSON('json/chords_major_bigrams.json')
-    
-# Trigrams
-chords_major_trigrams = transform.import_JSON('json/chords_major_trigrams.json')
-    
-# Note probabilites per chord
-chords_major_given = transform.import_JSON('json/chords_major_given.json')
 
-# Unigrams
-chords_minor_unigrams = transform.import_JSON('json/chords_minor_unigrams.json')
-    
-# Bigrams
-chords_minor_bigrams = transform.import_JSON('json/chords_minor_bigrams.json')
-    
-# Trigrams
-chords_minor_trigrams = transform.import_JSON('json/chords_minor_trigrams.json')
-    
-# Note probabilites per chord
-chords_minor_given = transform.import_JSON('json/chords_minor_given.json')
 
 #assert isclose(_total(chords_unigrams), 1.0)
 #assert isclose(_total(chords_bigrams), 1.0)
