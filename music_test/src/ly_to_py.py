@@ -14,7 +14,7 @@ from music21.corpus import getComposer
 from gcp import util
 from gcp import transform
 from gcp import chords as chords
-from gcp import counterpoint as counterpoint
+from gcp import notes as notes
 from gcp import genetic
 from gcp import viterbi
 from gcp import rhythm
@@ -46,11 +46,12 @@ melody = [note for bar in song.elements for note in bar if type(note) == Note]
 
 #print(equalise_interval(orig_melody))
 
-chords = chords.algorithm(melody, algorithm=viterbi)
+chords = chords.algorithm(melody)
 #chords = reversed(chords.algorithm([note for note in reversed(melody)], algorithm=viterbi))
-mel = counterpoint.algorithm(melody, chords, algorithm=viterbi)
+mel = notes.algorithm(melody, chords)
+#mel = list(reversed(counterpoint.algorithm(list(reversed(melody)), list(reversed(chords)), algorithm=viterbi)))
 print(mel)
-rhy = rhythm.algorithm(orig_melody, algorithm=viterbi)
+rhy = rhythm.algorithm(orig_melody)
 
 # Add a new part
 tune = Part()

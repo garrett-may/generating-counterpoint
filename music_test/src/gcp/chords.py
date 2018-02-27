@@ -98,7 +98,7 @@ def read_chords_corpus(corp, debug=False):
     transform.export_JSON('json/chords_minor_tetragrams.json', tetragrams)
     transform.export_JSON('json/chords_minor_given.json', given)
  
-def algorithm(melody, algorithm):
+def algorithm(melody):
     is_major = util.is_major(util.key(melody))
     (unigrams, bigrams, trigrams, tetragrams, given) = (chords_major_unigrams, chords_major_bigrams,  
                                             chords_major_trigrams, chords_major_tetragrams, chords_major_given) if is_major else \
