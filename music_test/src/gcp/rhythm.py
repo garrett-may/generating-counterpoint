@@ -7,6 +7,7 @@ from gcp.transform import Hold
 from gcp import util
 from gcp import viterbi
 import numpy as np
+from collections import deque
     
 rhythms_unigrams = transform.import_JSON('json/rhythms_unigrams.json')
 rhythms_bigrams = transform.import_JSON('json/rhythms_bigrams.json')

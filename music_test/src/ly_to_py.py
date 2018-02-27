@@ -13,8 +13,9 @@ from music21.corpus import getComposer
 
 from gcp import util
 from gcp import transform
-from gcp import chords as chords
-from gcp import notes as notes
+from gcp import chords
+from gcp import notes
+from gcp import counterpoint
 from gcp import genetic
 from gcp import viterbi
 from gcp import rhythm
@@ -33,30 +34,29 @@ import json
 filename = sys.argv[1]
 song = transform.import_mid(filename)
 transform.populate_measures(song)
-for index in range(0, len(song.elements) - 3, 1):
-    part = Part()
-    part.append(song.elements[index])
-    part.append(song.elements[index+1])
-    part.append(song.elements[index+2])
-    part.append(song.elements[index+3])
-    #print(analysis.discrete.KrumhanslSchmuckler().getWeights())
-    print(part.analyze('key'))
-orig_melody = [note for bar in song.elements for note in bar]
-melody = [note for bar in song.elements for note in bar if type(note) == Note]
+
+original_melody, generate_melody = counterpoint.algorithm(song, 3.0)
+
+tune = original_melody
+accompaniment = generate_melody
+
+#melody = [note for bar in song.elements for note in bar if type(note) == Note]
 
 #print(equalise_interval(orig_melody))
 
-chords = chords.algorithm(melody)
+#chords = chords.algorithm(melody)
 #chords = reversed(chords.algorithm([note for note in reversed(melody)], algorithm=viterbi))
-mel = notes.algorithm(melody, chords)
+#mel = notes.algorithm(melody, chords)
 #mel = list(reversed(counterpoint.algorithm(list(reversed(melody)), list(reversed(chords)), algorithm=viterbi)))
-print(mel)
-rhy = rhythm.algorithm(orig_melody)
+#print(mel)
+#'rhy = rhythm.algorithm(orig_melody)
 
 # Add a new part
+"""
 tune = Part()
 accompaniment = Part()
 key = song.analyze('key')
+"""
 """
 current_note = None
 last_rhythm_type = '????'
@@ -105,7 +105,7 @@ if current_note != None:
 tune = util.part(orig_melody)
 accompaniment = util.part(new_melody)
 """
-
+"""
 print(key)
 counter = 0
 for index, chord_1 in enumerate(chords):
@@ -123,6 +123,7 @@ for index, chord_1 in enumerate(chords):
     accompaniment.append(note)
     tune.append(melody[index])
     counter += 1
+"""
 
 score = Score()
 score.insert(0, tune)

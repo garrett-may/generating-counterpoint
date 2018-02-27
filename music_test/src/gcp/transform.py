@@ -7,6 +7,7 @@ from music21.stream import Measure
 from music21 import lily
 import json
 import numpy as np
+import collections
 
 class Hold:
     pass
@@ -126,7 +127,7 @@ def populate_measures(song):
 def equalise_interval(melody, interval=0.0625):    
     def parse_elem(elem):
         return ([elem] + [Hold() for i in np.arange(interval, elem.quarterLength, interval)] if type(elem) is not Rest else
-                [Rest(interval) for i in np.arange(0.0, elem.quarterLength, interval)])    
+                [Rest(quarterLength=interval) for i in np.arange(0.0, elem.quarterLength, interval)])    
     
     return [e for elem in melody for e in parse_elem(elem)]
     
@@ -147,3 +148,58 @@ def flatten_equalised_parts(song, interval=0.0625):
             part[index] = bars[i]
             
     return parts
+    
+# Makes a note sequence mimic a melody in terms of quarter lengths and rests
+def mimic_melody(note_sequence, melody):
+    melody_sequence = []
+    queue = collections.deque(note_sequence)
+    for elem in melody:
+        if type(elem) is Note:
+            melody_sequence += [Note(queue.popleft(), quarterLength=elem.quarterLength)]
+        elif type(elem) is Rest:
+            melody_sequence += [Rest(quarterLength=elem.quarterLength)]
+    return melody_sequence
+
+# Zips together a note sequence and a rhythm sequence
+def note_rhythm_zip(melody, note_sequence, rhythm_sequence, time_signature, interval=0.0625):
+    melody_sequence = mimic_melody(note_sequence, melody)
+    melody_sequence = [Note(elem.nameWithOctave, quarterLength=interval) if type(elem) is Note else Rest(quarterLength=interval) for elem in melody_sequence for i in np.arange(0.0, elem.quarterLength, interval)]
+    
+    new_melody_sequence = []
+    elem = None
+    bar_length = 0.0
+
+    # Handle notes in the melody due to bars and time signature
+    def add_to_melody_sequence(new_melody_sequence, elem, bar_length):
+        if type(elem) not in [Note, Rest]:
+            pass
+        elif bar_length + elem.quarterLength >= time_signature:
+            extra = bar_length + elem.quarterLength - time_signature
+            elem.quarterLength = time_signature - bar_length
+            new_melody_sequence += [elem]
+            bar_length = extra
+            # The possible extra note
+            if extra > 0.0:
+                elem = Note(elem.nameWithOctave) if type(elem) is Note else Rest()
+                elem.quarterLength = extra
+        else:
+            new_melody_sequence += [elem]
+            bar_length += elem.quarterLength
+            elem = None
+        return (new_melody_sequence, elem, bar_length)
+    
+    for index, rhythm in enumerate(rhythm_sequence):
+        if rhythm == 'Hold' and type(elem) is Note:
+            elem.quarterLength += interval
+        elif rhythm == 'Note':
+            new_melody_sequence, elem, bar_length = add_to_melody_sequence(new_melody_sequence, elem, bar_length)
+            elem = melody_sequence[index]
+            elem.quarterLength = interval  
+        elif rhythm == 'Rest' and type(elem) is Rest:
+            elem.quarterLength += interval
+        elif rhythm == 'Rest':
+            new_melody_sequence, elem, bar_length = add_to_melody_sequence(new_melody_sequence, elem, bar_length)
+            elem = Rest()
+            elem.quarterLength = interval
+    new_melody_sequence, elem, bar_length = add_to_melody_sequence(new_melody_sequence, elem, bar_length)
+    return new_melody_sequence
