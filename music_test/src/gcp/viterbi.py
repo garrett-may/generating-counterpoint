@@ -59,8 +59,8 @@ def max_probability(probs):
             (max_tr_prob, c_1) = (tr_prob, chord_1)
     return (c_1, max_tr_prob)
     
-def rand_probability(probs):
-    probs = [(elem, prob*prob) for elem, prob in probs]
+def rand_probability(probs, mapping=lambda prob: prob):
+    probs = [(elem, mapping(prob)) for elem, prob in probs]
     cumulative_dist = _cumulative_distribution(probs)
     r = random.random()
     for (elem, prob) in cumulative_dist:

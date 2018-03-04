@@ -124,7 +124,7 @@ def populate_measures(song):
 # Transforms melodies such that they are incremented by equal time intervals
 # E.g. A crotchet may be split into [Note, Hold, Hold, Hold], where each element
 # has a time interval of a semiquaver        
-def equalise_interval(melody, interval=0.0625):    
+def equalise_interval(melody, interval=0.25):    
     def parse_elem(elem):
         return ([elem] + [Hold() for i in np.arange(interval, elem.quarterLength, interval)] if type(elem) is not Rest else
                 [Rest(quarterLength=interval) for i in np.arange(0.0, elem.quarterLength, interval)])    
@@ -132,7 +132,7 @@ def equalise_interval(melody, interval=0.0625):
     return [e for elem in melody for e in parse_elem(elem)]
     
 # Flattens a song into melodies, and then time interval equalises them
-def flatten_equalised_parts(song, interval=0.0625):
+def flatten_equalised_parts(song, interval=0.25):
     # Only look at notes, and rests (not e.g. chords, time signature, key signature, page layouts)
     parts = [[[elem for elem in bar if type(elem) in [Note, Rest]] for bar in part.getElementsByClass('Measure')] for part in song.getElementsByClass('Part')]
     
@@ -161,7 +161,7 @@ def mimic_melody(note_sequence, melody):
     return melody_sequence
 
 # Zips together a note sequence and a rhythm sequence
-def note_rhythm_zip(melody, note_sequence, rhythm_sequence, time_signature, interval=0.0625):
+def note_rhythm_zip(melody, note_sequence, rhythm_sequence, time_signature, interval=0.25):
     melody_sequence = mimic_melody(note_sequence, melody)
     melody_sequence = [Note(elem.nameWithOctave, quarterLength=interval) if type(elem) is Note else Rest(quarterLength=interval) for elem in melody_sequence for i in np.arange(0.0, elem.quarterLength, interval)]
     

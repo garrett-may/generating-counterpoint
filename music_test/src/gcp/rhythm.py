@@ -104,15 +104,20 @@ def populate_rhythms(song):
         for i in range(0, len(part) - 3):
             tetragrams[part[i]][part[i+1]][part[i+2]][part[i+3]] += 1
         
-    prev_notes = [Rest() for part in parts]
+    #prev_notes = [Rest() for part in parts]
     for i in range(len(parts[0])):
         elems = [part[i] for part in parts]
-        (curr_notes, prev_notes) = next_notes(elems, prev_notes)
-        if len(elems) > 1:
-            rhythm_1 = rhythm_mapping[type(elems[0])]
-            for elem in elems[1:]:       
-                rhythm_2 = rhythm_mapping[type(elem)]
-                given[rhythm_2][rhythm_1] += 1
+        #(curr_notes, prev_notes) = next_notes(elems, prev_notes)
+        for i in range(0, len(elems) - 1):
+            rhythm_1 = rhythm_mapping[type(elems[i])]
+            rhythm_2 = rhythm_mapping[type(elems[i+1])]
+            given[rhythm_2][rhythm_1] += 1        
+        
+        #if len(elems) > 1:
+        #    rhythm_1 = rhythm_mapping[type(elems[0])]
+        #    for elem in elems[1:]:       
+        #        rhythm_2 = rhythm_mapping[type(elem)]
+        #        given[rhythm_2][rhythm_1] += 1
             
         #for index, elem in enumerate(elems):
         #    note = elems[index] if type(elems[index]) is Note else prev_notes[index]
