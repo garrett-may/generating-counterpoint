@@ -230,7 +230,7 @@ def read_notes_corpus(corp, debug=False):
     transform.export_JSON('json/notes_2_minor_given.json', given)
    
 def algorithm(melody, chords):
-    is_major = True
+    is_major = util.is_major(util.key(melody))
     (unigrams, bigrams, trigrams, tetragrams, given) = (notes_major_unigrams, notes_major_bigrams,  
                                             notes_major_trigrams, notes_major_tetragrams, notes_major_given) if is_major else \
                                             (notes_minor_unigrams, notes_minor_bigrams,
@@ -243,6 +243,9 @@ def algorithm(melody, chords):
                                             
     def square(prob):
         return prob*prob
+        
+    transposed_melody = util.notes_names([note for note in melody], util.key(melody))
+    melody = transposed_melody
                                             
     # Viterbi algorithm (adapted for randomness)                                         
     #obs = chords
@@ -251,21 +254,21 @@ def algorithm(melody, chords):
     # Unigrams
     V = [{}]
     for note_1 in note_types:
-        V[0][note_1] = {'prob': unigrams[note_1] * (given[note_1][melody[0].name]) * given_2[note_1][chords[0]], 'prev': None}
+        V[0][note_1] = {'prob': unigrams[note_1] * (given[note_1][melody[0]]) * given_2[note_1][chords[0]], 'prev': None}
     
     # Bigrams
     V.append({})
     for note_2 in note_types:
         tr_probs = [(note_1, V[0][note_1]['prob'] * bigrams[note_1][note_2]) for note_1 in note_types]
         (n_1, max_tr_prob) = viterbi.rand_probability(tr_probs, mapping=square)
-        V[1][note_2] = {'prob': max_tr_prob * (given[note_1][melody[1].name]) * given_2[note_1][chords[1]], 'prev': n_1}
+        V[1][note_2] = {'prob': max_tr_prob * (given[note_1][melody[1]]) * given_2[note_1][chords[1]], 'prev': n_1}
     
     # Trigrams
     V.append({})
     for note_3 in note_types:
         tr_probs = [(note_2, V[1][note_2]['prob'] * trigrams[note_1][note_2][note_3]) for note_1 in note_types for note_2 in note_types]        
         (n_2, max_tr_prob) = viterbi.rand_probability(tr_probs, mapping=square)
-        V[2][note_3] = {'prob': max_tr_prob * (given[note_1][melody[2].name]) * given_2[note_1][chords[2]], 'prev': n_2}    
+        V[2][note_3] = {'prob': max_tr_prob * (given[note_1][melody[2]]) * given_2[note_1][chords[2]], 'prev': n_2}    
     
     # Tetragrams    
     for t in range(3, len(chords)):
@@ -273,7 +276,7 @@ def algorithm(melody, chords):
         for note_4 in note_types:
             tr_probs = [(note_3, V[t-1][note_3]['prob'] * tetragrams[note_1][note_2][note_3][note_4]) for note_1 in note_types for note_2 in note_types for note_3 in note_types]
             (n_3, max_tr_prob) = viterbi.rand_probability(tr_probs, mapping=square) if t != len(chords) - 1 else viterbi.max_probability(tr_probs)
-            V[t][note_4] = {'prob': max_tr_prob * (given[note_1][melody[t].name]) * given_2[note_1][chords[t]], 'prev': n_3}
+            V[t][note_4] = {'prob': max_tr_prob * (given[note_1][melody[t]]) * given_2[note_1][chords[t]], 'prev': n_3}
           
     mel = viterbi.max_backtrace(V, debug=True)    
     # Viterbi algorithm      

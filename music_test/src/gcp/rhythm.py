@@ -168,7 +168,7 @@ def read_rhythms_corpus(corp, debug=False):
     transform.export_JSON('json/rhythms_minor_given.json', given)
     
 def algorithm(melody):
-    is_major = True
+    is_major = util.is_major(util.key(melody))
     (unigrams, bigrams, trigrams, tetragrams, given) = (rhythms_major_unigrams, rhythms_major_bigrams,  
                                             rhythms_major_trigrams, rhythms_major_tetragrams, rhythms_major_given) if is_major else \
                                             (rhythms_minor_unigrams, rhythms_minor_bigrams,
