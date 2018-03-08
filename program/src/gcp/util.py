@@ -1,4 +1,5 @@
 from music21.stream import Part
+from music21.meter import TimeSignature
 from music21.roman import romanNumeralFromChord
 
 # Basic note names
@@ -61,11 +62,11 @@ def key(sequence):
 def is_major(key):
     return key.mode == 'major'
     
-# Gets the time signature of a music21 song
-def time_signature(song):
-    time_signatures = [time_signature for time_signature in song.flat.getElementsByClass('TimeSignature')]
-    if len(time_signatures) > 0:
-        time_signature = time_signatures[0] 
-        return time_signature.beatDuration.quarterLength * time_signature.numerator
-    else:
-        return 0.0
+# Gets the time signature symbol of a music21 song
+def time_signature_symbol(song):
+    time_signature_symbols = [time_signature for time_signature in song.flat.getElementsByClass('TimeSignature')]
+    return time_signature_symbols[0] if len(time_signature_symbols) > 0 else None
+        
+# Gets the time signature quarterLength value from a time signature symbol
+def time_signature(time_signature_symbol):
+    return time_signature_symbol.beatDuration.quarterLength * time_signature_symbol.numerator if type(time_signature_symbol) is TimeSignature else 0.0

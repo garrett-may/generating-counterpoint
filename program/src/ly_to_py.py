@@ -26,11 +26,11 @@ def generate_counterpoint_attempt():
     # Import the melody, and process it
     filename = sys.argv[1]
     song = transform.import_mid(filename)
-    time_signature = util.time_signature(song)
+    time_signature_symbol = util.time_signature_symbol(song)
     transform.populate_measures(song)
 
     # Compute a counterpoint melody
-    original_melody, generate_melody = counterpoint.algorithm(song, time_signature)
+    original_melody, generate_melody = counterpoint.algorithm(song, time_signature_symbol)
 
     # Build a new score
     score = Score()
