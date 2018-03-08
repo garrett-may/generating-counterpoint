@@ -3,6 +3,7 @@ import json
 
 filenames = ['chord.1stL.csv', 'chord.2ndL.csv']
 
+# Maps values to roman numeral chord names
 mapping = {
     '1': 'I',
     '4': 'IV',
@@ -63,6 +64,7 @@ def chords_name(chord_name):
         key = key[:-1]
     return mapping[key] if key != '' else mapping[chord_name]
 
+# Chord names
 chord_names = ['I', '#I', 'II', '#II', 'III', 'IV', '#IV', 'V', '#V', 'VI', '#VI', 'VII',
                'i', '#i', 'ii', '#ii', 'iii', 'iv', '#iv', 'v', '#v', 'vi', '#vi', 'vii']
 
@@ -88,25 +90,6 @@ with open(filenames[1], 'r') as csvfile:
         
 unigrams = _freq_to_prob(unigrams, _total(unigrams))
 bigrams = _freq_to_prob(bigrams, _total(bigrams))        
-
-def pprint(ls, tab=0):
-    indent = ""
-    for i in range(0, tab):
-        indent += '.'
-    if type(ls) is list:
-        print(indent)
-        for elem in ls:
-            pprint(elem, tab+4)
-    elif type(ls) is dict:
-        print(indent)
-        for key, value in ls.items():
-            print('{}{}'.format(indent, key))
-            pprint(value, tab+4)
-    else:
-        print('{}{}'.format(indent, ls))
-        
-pprint(unigrams)    
-pprint(bigrams) 
 
 js = json.dumps(unigrams)
 with open('chords_true_unigrams.json', 'w') as fp:
