@@ -38,8 +38,8 @@ def generate_counterpoint_attempt():
     score.insert(0, generate_melody)
 
     # Export the score
-    transform.export_mid(score, '../mid/' + filename + '_gcp')
-    transform.export_ly(score, '../ly/' + filename + '_gcp')
-    transform.export_pdf(score, '../pdf/' + filename + '_gcp')
+    transform.export_mid(score, filename + '_gcp')
+    transform.export_ly(score, filename + '_gcp')
+    transform.export_pdf(score, filename + '_gcp')
     
 generate_counterpoint_attempt()

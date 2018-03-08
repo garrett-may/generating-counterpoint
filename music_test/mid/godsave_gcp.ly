@@ -1,4 +1,4 @@
-\new Staff  = xzffwcxxafccfyw { g' 4  
+\new Staff  = xawdwyfxxzbeyzy { g' 4  
       g' 4  
       a' 4  
       fis' 4  
@@ -49,57 +49,58 @@
        } 
      
  
-\new Staff  = xzffwcxxbxfazea { c' 4  
+\new Staff  = xawdwyfxxdbazxy { c' 8  
+      c' 8  
+      c' 8  
+      c' 8  
+      b' 4  
+      b' 4  
+      r 8  
+      c' 8  
+      b' 8  
+      b' 8  
+      c' 4  
+      c' 4  
+      d' 8.  
+      c' 4  
+      r 8  
+      b' 8  
       c' 4  
       b' 4  
-      d' 4  
+      g' 4  
+      g' 4  
+      g' 4  
+      g' 8  
+      r 4  
+      c' 4  
+      c' 4  
+      c' 4  
+      c' 8  
+      c' 8  
+      r 8  
+      c' 8  
+      c' 4  
+      c' 4  
+      c' 4  
+      c' 8.  
+      r 16  
+      c' 4  
       r 8  
       c' 8  
       b' 4  
+      c' 4.  
+      g' 8  
+      g' 8  
+      g' 8  
+      c' 8.  
+      r 8.  
+      d' 4.  
+      c' 8  
+      c' 8  
       c' 4  
-      c' 4  
-      d' 2  
-      r 8  
-      d' 8  
-      c' 4  
-      b' 4.  
-      r 16  
-      d' 4  
-      e' 4  
-      e' 8  
-      r 4  
-      e' 8  
-      e' 8  
-      e' 8  
-      e' 8  
-      e' 4  
-      c' 4  
-      r 8  
-      d' 8  
-      c' 4  
-      c' 4  
-      c' 4  ~  
+      b' 4  
       c' 16  
       c' 8.  
-      c' 8  
-      c' 8  
-      r 8  
-      c' 8  
-      b' 8  
-      b' 8  
-      c' 4  
-      d' 8  
-      c' 8  
-      b' 8  
-      c' 8  
-      c' 4  
-      r 8  
-      a' 8  
-      g' 4  
-      f' 8  
-      c' 4.  
-      b' 4  
-      c' 4  
       r 2.  
        } 
      
