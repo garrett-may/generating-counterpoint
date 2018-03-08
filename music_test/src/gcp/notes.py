@@ -8,7 +8,6 @@ notes_with_octaves_unigrams = transform.import_JSON('json/notes_with_octaves_uni
 notes_with_octaves_bigrams = transform.import_JSON('json/notes_with_octaves_bigrams.json')
 notes_with_octaves_given = transform.import_JSON('json/notes_with_octaves_given.json')
 
-
 notes_unigrams = transform.import_JSON('json/notes_unigrams.json')
 notes_bigrams = transform.import_JSON('json/notes_bigrams.json')
 notes_trigrams = transform.import_JSON('json/notes_trigrams.json')
@@ -261,14 +260,14 @@ def algorithm(melody, chords):
     for note_2 in note_types:
         tr_probs = [(note_1, V[0][note_1]['prob'] * bigrams[note_1][note_2]) for note_1 in note_types]
         (n_1, max_tr_prob) = viterbi.rand_probability(tr_probs, mapping=square)
-        V[1][note_2] = {'prob': max_tr_prob * (given[note_1][melody[1]]) * given_2[note_1][chords[1]], 'prev': n_1}
+        V[1][note_2] = {'prob': max_tr_prob * (given[note_2][melody[1]]) * given_2[note_2][chords[1]], 'prev': n_1}
     
     # Trigrams
     V.append({})
     for note_3 in note_types:
         tr_probs = [(note_2, V[1][note_2]['prob'] * trigrams[note_1][note_2][note_3]) for note_1 in note_types for note_2 in note_types]        
         (n_2, max_tr_prob) = viterbi.rand_probability(tr_probs, mapping=square)
-        V[2][note_3] = {'prob': max_tr_prob * (given[note_1][melody[2]]) * given_2[note_1][chords[2]], 'prev': n_2}    
+        V[2][note_3] = {'prob': max_tr_prob * (given[note_3][melody[2]]) * given_2[note_3][chords[2]], 'prev': n_2}    
     
     # Tetragrams    
     for t in range(3, len(chords)):
@@ -276,7 +275,7 @@ def algorithm(melody, chords):
         for note_4 in note_types:
             tr_probs = [(note_3, V[t-1][note_3]['prob'] * tetragrams[note_1][note_2][note_3][note_4]) for note_1 in note_types for note_2 in note_types for note_3 in note_types]
             (n_3, max_tr_prob) = viterbi.rand_probability(tr_probs, mapping=square) if t != len(chords) - 1 else viterbi.max_probability(tr_probs)
-            V[t][note_4] = {'prob': max_tr_prob * (given[note_1][melody[t]]) * given_2[note_1][chords[t]], 'prev': n_3}
+            V[t][note_4] = {'prob': max_tr_prob * (given[note_4][melody[t]]) * given_2[note_4][chords[t]], 'prev': n_3}
           
     mel = viterbi.max_backtrace(V, debug=True)    
     # Viterbi algorithm      

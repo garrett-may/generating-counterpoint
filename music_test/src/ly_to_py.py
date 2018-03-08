@@ -38,7 +38,7 @@ song = transform.import_mid(filename)
 transform.populate_measures(song)
 
 # Compute a counterpoint melody
-original_melody, generate_melody = counterpoint.algorithm(song, 3.0)
+original_melody, generate_melody = counterpoint.algorithm(song, 4.0)
 
 # Build a new score
 score = Score()
