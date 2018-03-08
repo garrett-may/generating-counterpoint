@@ -1,8 +1,4 @@
-from deap import base
-from deap import creator
-from deap import tools
-from deap import algorithms
-from gcp import util
+from deap import base, creator, tools, algorithms
 import random
 import numpy
 

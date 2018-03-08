@@ -1,63 +1,27 @@
-from music21.stream import *
 from music21.note import Note, Rest
-from music21.chord import Chord
-from gcp import corpus
-from gcp import transform
+from gcp import util, transform, corpus, viterbi
 from gcp.transform import Hold
-from gcp import util
-from gcp import viterbi
-import numpy as np
-from collections import deque
     
+# General probability information
 rhythms_unigrams = transform.import_JSON('json/rhythms_unigrams.json')
 rhythms_bigrams = transform.import_JSON('json/rhythms_bigrams.json')
 rhythms_trigrams = transform.import_JSON('json/rhythms_trigrams.json')
 rhythms_tetragrams = transform.import_JSON('json/rhythms_tetragrams.json')
 rhythms_given = transform.import_JSON('json/rhythms_given.json') # Rhythm probabilites per rhythm
     
+# Major probability information
 rhythms_major_unigrams = transform.import_JSON('json/rhythms_major_unigrams.json')
 rhythms_major_bigrams = transform.import_JSON('json/rhythms_major_bigrams.json')
 rhythms_major_trigrams = transform.import_JSON('json/rhythms_major_trigrams.json')
 rhythms_major_tetragrams = transform.import_JSON('json/rhythms_major_tetragrams.json')
 rhythms_major_given = transform.import_JSON('json/rhythms_major_given.json')
 
+# Minor probability information
 rhythms_minor_unigrams = transform.import_JSON('json/rhythms_minor_unigrams.json')    
 rhythms_minor_bigrams = transform.import_JSON('json/rhythms_minor_bigrams.json')
 rhythms_minor_trigrams = transform.import_JSON('json/rhythms_minor_trigrams.json')
 rhythms_minor_tetragrams = transform.import_JSON('json/rhythms_minor_tetragrams.json')
 rhythms_minor_given = transform.import_JSON('json/rhythms_minor_given.json')    
-    
-def pprint(ls, tab=0):
-    indent = ""
-    for i in range(0, tab):
-        indent += '.'
-    if type(ls) is list:
-        print(indent)
-        for elem in ls:
-            pprint(elem, tab+4)
-    else:
-        print('{}{}'.format(indent, ls))
-    
-def next_notes(elems, last_notes):
-    curr_notes = []
-    for index, elem in enumerate(elems):
-        if type(elem) is Note:
-            curr_notes += [elem]
-        elif type(elem) is Chord:
-            curr_notes += [note for note in elem]
-        elif type(elem) is Hold:
-            notes = last_notes[index]
-            if type(notes) is Note:
-                curr_notes += [notes]
-            elif type(notes) is Chord:
-                curr_notes += [note for note in notes]
-    prev_notes = []
-    for index, elem in enumerate(elems):
-        if type(elem) is Note or type(elem) is Chord:
-            prev_notes += [elem]
-        else:
-            prev_notes += [last_notes[index]]
-    return (curr_notes, prev_notes)
     
 # Populates note frequencies for a song
 def populate_rhythms(song):
@@ -89,53 +53,33 @@ def populate_rhythms(song):
     for part in parts:
         part = [rhythm_mapping[type(elem)] for elem in part]
         
+        # Rhythm unigrams
         for i in range(0, len(part)):
             unigrams[part[i]] += 1
 
-        # Note bigrams
+        # Rhythm bigrams
         for i in range(0, len(part) - 1):
             bigrams[part[i]][part[i+1]] += 1
 
-        # Note trigrams
+        # Rhythm trigrams
         for i in range(0, len(part) - 2):
             trigrams[part[i]][part[i+1]][part[i+2]] += 1
             
-        # Note tetragrams
+        # Rhythm tetragrams
         for i in range(0, len(part) - 3):
             tetragrams[part[i]][part[i+1]][part[i+2]][part[i+3]] += 1
-        
-    #prev_notes = [Rest() for part in parts]
+    
+    # Rhythm probabilites per rhythm
     for i in range(len(parts[0])):
         elems = [part[i] for part in parts]
-        #(curr_notes, prev_notes) = next_notes(elems, prev_notes)
         for i in range(0, len(elems) - 1):
             rhythm_1 = rhythm_mapping[type(elems[i])]
             rhythm_2 = rhythm_mapping[type(elems[i+1])]
-            given[rhythm_2][rhythm_1] += 1        
-        
-        #if len(elems) > 1:
-        #    rhythm_1 = rhythm_mapping[type(elems[0])]
-        #    for elem in elems[1:]:       
-        #        rhythm_2 = rhythm_mapping[type(elem)]
-        #        given[rhythm_2][rhythm_1] += 1
-            
-        #for index, elem in enumerate(elems):
-        #    note = elems[index] if type(elems[index]) is Note else prev_notes[index]
-        #    if type(note) is Note:
-        #        note_name = util.notes_names([note], key)[0]
-        #        elem = rhythm_mapping[type(elem)]
-        #        given[elem][note_name] += 1
-            
-        #if curr_notes != []:
-        #    chord = Chord(curr_notes)
-            #chord_name = util.roman(chord, key)
-            #elems = [rhythm_mapping[type(elem)] for elem in elems]
-            #for elem in elems:
-            #    given[elem][chord_name] += 1  
-            
+            given[rhythm_2][rhythm_1] += 1       
             
     return (unigrams, bigrams, trigrams, tetragrams, given)
     
+# Builds the probabilties by reading from a particular corpus
 def read_rhythms_corpus(corp, debug=False):
     def is_major(song):
         return util.is_major(song.analyze('key'))
@@ -167,17 +111,25 @@ def read_rhythms_corpus(corp, debug=False):
     transform.export_JSON('json/rhythms_minor_tetragrams.json', tetragrams)
     transform.export_JSON('json/rhythms_minor_given.json', given)
     
-def algorithm(melody):
+# Runs the algorithm to produce a rhythm sequence 
+def algorithm(melody, debug=False):
     is_major = util.is_major(util.key(melody))
-    (unigrams, bigrams, trigrams, tetragrams, given) = (rhythms_major_unigrams, rhythms_major_bigrams,  
-                                            rhythms_major_trigrams, rhythms_major_tetragrams, rhythms_major_given) if is_major else \
-                                            (rhythms_minor_unigrams, rhythms_minor_bigrams,
-                                            rhythms_minor_trigrams, rhythms_minor_tetragrams, rhythms_minor_given)
-    #transposed_melody = util.notes_names([note for note in melody], util.key(melody))
+    if is_major:
+        unigrams = rhythms_major_unigrams
+        bigrams = rhythms_major_bigrams
+        trigrams = rhythms_major_trigrams
+        tetragrams = rhythms_major_tetragrams
+        given = rhythms_major_given
+    else:
+        unigrams = rhythms_minor_unigrams
+        bigrams = rhythms_minor_bigrams
+        trigrams = rhythms_minor_trigrams
+        tetragrams = rhythms_minor_tetragrams
+        given = rhythms_minor_given
+    
     part = transform.equalise_interval(melody)
     rhythm_mapping = {Note: 'Note', Rest: 'Rest', Hold: 'Hold'}
-    part = [rhythm_mapping[type(elem)] for elem in part]
-    rhythm = part
+    rhythm = [rhythm_mapping[type(elem)] for elem in part]
     
     # Viterbi algorithm (adapted for randomness)      
     rhythm_types = rhythm_mapping.values()
@@ -209,6 +161,4 @@ def algorithm(melody):
             (r_3, max_tr_prob) = viterbi.rand_probability(tr_probs)
             V[t][rhythm_4] = {'prob': max_tr_prob * given[rhythm_4][rhythm[t]], 'prev': r_3}
           
-    return viterbi.max_backtrace(V, debug=True)
-    
-    #return algorithm.algorithm(part, unigrams, bigrams, trigrams, tetragrams, given, rand=True)
+    return viterbi.max_backtrace(V, debug=debug)

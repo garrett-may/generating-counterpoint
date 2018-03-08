@@ -1,6 +1,4 @@
 from music21 import corpus
-from collections import *
-from gcp import util
 
 # Total sum of the values of a dictionary
 def _total(item):

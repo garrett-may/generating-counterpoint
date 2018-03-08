@@ -1,10 +1,5 @@
-from music21.note import Note, Rest
-
-from gcp import util
-from gcp import transform
-from gcp import chords
-from gcp import notes
-from gcp import rhythm
+from music21.note import Note
+from gcp import util, transform, chords, notes, rhythm
 
 
 def algorithm(song, time_signature):

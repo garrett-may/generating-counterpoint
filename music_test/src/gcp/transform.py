@@ -1,15 +1,16 @@
-from music21 import converter
-from music21.note import *
-from music21.chord import Chord
-from collections import Iterable
-from music21.meter import TimeSignature
+from music21 import converter, lily
 from music21.stream import Measure
-from music21 import lily
+from music21.note import Note, Rest
+from music21.chord import Chord
+from music21.meter import TimeSignature
 from gcp import util
+import copy
+import collections
+from collections import Iterable
 import json
 import numpy as np
-import collections
 
+# Class to represent a held note
 class Hold:
     pass
 
