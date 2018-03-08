@@ -75,3 +75,11 @@ def key(sequence):
     
 def is_major(key):
     return key.mode == 'major'
+    
+def time_signature(song):
+    time_signatures = [time_signature for time_signature in song.flat.getElementsByClass('TimeSignature')]
+    if len(time_signatures) > 0:
+        time_signature = time_signatures[0] 
+        return time_signature.beatDuration.quarterLength * time_signature.numerator
+    else:
+        return 0.0

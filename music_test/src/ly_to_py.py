@@ -35,10 +35,11 @@ import json
 # Import the melody, and process it
 filename = sys.argv[1]
 song = transform.import_mid(filename)
+time_signature = util.time_signature(song)
 transform.populate_measures(song)
 
 # Compute a counterpoint melody
-original_melody, generate_melody = counterpoint.algorithm(song, 4.0)
+original_melody, generate_melody = counterpoint.algorithm(song, time_signature)
 
 # Build a new score
 score = Score()
@@ -49,5 +50,3 @@ score.insert(0, generate_melody)
 transform.export_mid(score, '../mid/' + filename + '_gcp')
 transform.export_ly(score, '../ly/' + filename + '_gcp')
 transform.export_pdf(score, '../pdf/' + filename + '_gcp')
-
-

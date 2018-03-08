@@ -5,6 +5,7 @@ from collections import Iterable
 from music21.meter import TimeSignature
 from music21.stream import Measure
 from music21 import lily
+from gcp import util
 import json
 import numpy as np
 import collections
@@ -58,7 +59,7 @@ def export_pdf(song, filename):
 # If this is the case, populate them
 def populate_measures(song):
     # Initial values
-    time_signature_length = 0
+    time_signature_length = util.time_signature(song)
     seen_length = 0
     bars = []
     current_bar = []
@@ -95,10 +96,7 @@ def populate_measures(song):
     part = find_bars(song)
     # Search through each item in the bar
     for item in part:
-        if type(item) is TimeSignature:
-            # Time signature
-            time_signature_length = item.beatDuration.quarterLength * item.numerator
-        elif type(item) is Note:
+        if type(item) is Note:
             # Note
             (current_bar, seen_length) = append_bar(current_bar, seen_length, item)
             (bars, current_bar, seen_length) = check_bar(bars, current_bar, seen_length)
