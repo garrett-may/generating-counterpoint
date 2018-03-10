@@ -170,7 +170,7 @@ def mimic_melody(note_sequence, melody):
 # Zips together a note sequence and a rhythm sequence
 def note_rhythm_zip(melody, note_sequence, rhythm_sequence, time_signature, interval=0.25):
     melody_sequence = mimic_melody(note_sequence, melody)
-    melody_sequence = [Note(elem.nameWithOctave, quarterLength=interval) for elem in melody_sequence for i in np.arange(0.0, elem.quarterLength, interval)]
+    melody_sequence = [Note(elem.nameWithOctave, quarterLength=interval) if type(elem) is Note else Rest(quarterLength=interval) for elem in melody_sequence for i in np.arange(0.0, elem.quarterLength, interval)]
     
     new_melody_sequence = []
     elem = None
