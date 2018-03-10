@@ -157,12 +157,20 @@ def mimic_melody(note_sequence, melody):
             melody_sequence += [Note(queue.popleft(), quarterLength=elem.quarterLength)]
         elif type(elem) is Rest:
             melody_sequence += [Rest(quarterLength=elem.quarterLength)]
+            
+    for index, elem in enumerate(melody_sequence):
+        if type(elem) is Rest:
+            if index > 0 and type(melody_sequence[index-1]) is Note:
+                melody_sequence[index] = Note(melody_sequence[index-1].nameWithOctave, quarterLength=elem.quarterLength)
+            elif index < len(melody_sequence) - 1 and type(melody_sequence[index+1]) is Note:
+                melody_sequence[index] = Note(melody_sequence[index+1].nameWithOctave, quarterLength=elem.quarterLength)
+            
     return melody_sequence
 
 # Zips together a note sequence and a rhythm sequence
 def note_rhythm_zip(melody, note_sequence, rhythm_sequence, time_signature, interval=0.25):
     melody_sequence = mimic_melody(note_sequence, melody)
-    melody_sequence = [Note(elem.nameWithOctave, quarterLength=interval) if type(elem) is Note else Rest(quarterLength=interval) for elem in melody_sequence for i in np.arange(0.0, elem.quarterLength, interval)]
+    melody_sequence = [Note(elem.nameWithOctave, quarterLength=interval) for elem in melody_sequence for i in np.arange(0.0, elem.quarterLength, interval)]
     
     new_melody_sequence = []
     elem = None
@@ -175,16 +183,15 @@ def note_rhythm_zip(melody, note_sequence, rhythm_sequence, time_signature, inte
         elif bar_length + elem.quarterLength >= time_signature:
             extra = bar_length + elem.quarterLength - time_signature
             elem.quarterLength = time_signature - bar_length
-            new_melody_sequence += [elem]
+            if elem.quarterLength > 0.0:
+                new_melody_sequence += [elem]
             bar_length = extra
             # The possible extra note
-            if extra > 0.0:
-                elem = Note(elem.nameWithOctave) if type(elem) is Note else Rest()
-                elem.quarterLength = extra
+            elem = Note(elem.nameWithOctave) if type(elem) is Note else Rest()
+            elem.quarterLength = extra
         else:
             new_melody_sequence += [elem]
-            bar_length += elem.quarterLength
-            elem = None
+            bar_length += elem.quarterLength            
         return (new_melody_sequence, elem, bar_length)
     
     for index, rhythm in enumerate(rhythm_sequence):
@@ -196,7 +203,7 @@ def note_rhythm_zip(melody, note_sequence, rhythm_sequence, time_signature, inte
             elem.quarterLength = interval  
         elif rhythm == 'Rest' and type(elem) is Rest:
             elem.quarterLength += interval
-        elif rhythm == 'Rest':
+        elif rhythm == 'Rest' or rhythm == 'Hold':
             new_melody_sequence, elem, bar_length = add_to_melody_sequence(new_melody_sequence, elem, bar_length)
             elem = Rest()
             elem.quarterLength = interval

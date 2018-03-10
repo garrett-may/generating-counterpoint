@@ -1,3 +1,4 @@
+from music21.note import Note
 from gcp import util, transform, corpus, viterbi
 
 # General probability information
@@ -106,7 +107,7 @@ def populate_notes_per_chord(song):
     
     chords = chords_naive.flat.getElementsByClass('Chord')
     chord_names = [util.roman(chord, key) for chord in chords]
-    note_names_list = [util.notes_names(chord, key, include_octave=False) for chord in chords]
+    note_names_list = [util.notes_names(chord, key) for chord in chords]
 
     # Chord probabilities per note    
     for chord_name, note_names in zip(chord_names, note_names_list):
@@ -255,7 +256,7 @@ def algorithm(melody, chords, debug=False):
     def square(prob):
         return prob*prob
         
-    transposed_melody = util.notes_names([note for note in melody], util.key(melody))
+    transposed_melody = util.notes_names(melody, util.key(melody))
                                             
     # Viterbi algorithm (adapted for randomness)
     note_types = util.note_names
@@ -287,7 +288,7 @@ def algorithm(melody, chords, debug=False):
             (n_3, max_tr_prob) = viterbi.rand_probability(tr_probs, mapping=square) if t != len(chords) - 1 else viterbi.max_probability(tr_probs)
             V[t][note_4] = {'prob': max_tr_prob * (given[note_4][transposed_melody[t]]) * given_2[note_4][chords[t]], 'prev': n_3}
           
-    mel = viterbi.max_backtrace(V, debug=debug)    
+    mel = viterbi.max_backtrace(V, debug=debug)  
         
     # Viterbi algorithm (for octaves)      
     
@@ -306,5 +307,9 @@ def algorithm(melody, chords, debug=False):
             V[t][note_2] = {'prob': max_tr_prob, 'prev': n_1}
             #V[t][note_2] = {'prob': max_tr_prob * (with_octaves_given[note_1][transposed_melody[t].nameWithOctave] + with_octaves_given[transposed_melody[t].nameWithOctave][note_1]), 'prev': n_1}
           
+    mel = viterbi.max_backtrace(V, debug=debug)
+    
+    mel = [Note(note_name) for note_name in mel]
+    mel = util.notes_names(mel, util.key(melody), reverse=True, include_octave=True)      
           
-    return viterbi.max_backtrace(V, debug=debug)
+    return mel

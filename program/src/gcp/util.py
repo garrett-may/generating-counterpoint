@@ -31,8 +31,9 @@ def interval(key):
        
 # Maps a list of notes to their translated note names
 # This also takes into account the key, and can include the octave if needed
-def notes_names(notes, key, include_octave=False):
-    return [note_names[(note_names.index(note_name(n.name)) - interval(key)) % octave] + (str(n.octave) if include_octave else '') for n in notes]
+def notes_names(notes, key, reverse=False, include_octave=False):
+    key_interval = -interval(key) if not reverse else interval(key)
+    return [note_names[(note_names.index(note_name(n.name)) + key_interval) % octave] + (str(n.octave) if include_octave else '') for n in notes]
     
 # Translates the chord name to a particular set
 # This handles chords which are "equal", such as I and #VII
