@@ -53,7 +53,7 @@ def populate_notes(song):
     given = {note_1:{note_2:0 for note_2 in note_types} for note_1 in note_types}
     
     # Get the key
-    key = song.analyze('key')
+    key = [key for key in song.flat.getElementsByClass('Key')][0]
 
     # Apply the naive chord algorithm
     chords_naive = song.chordify()
@@ -100,7 +100,7 @@ def populate_notes_per_chord(song):
     given = {note_1:{chord_1:0 for chord_1 in chord_types} for note_1 in note_types}    
     
     # Get the key
-    key = song.analyze('key')
+    key = [key for key in song.flat.getElementsByClass('Key')][0]
 
     # Apply the naive chord algorithm
     chords_naive = song.chordify()
@@ -129,7 +129,7 @@ def populate_notes_with_octaves(song):
     given = {note_1:{note_2:0 for note_2 in note_types} for note_1 in note_types}
     
     # Get the key
-    key = song.analyze('key')
+    key = [key for key in song.flat.getElementsByClass('Key')][0]
 
     # Apply the naive chord algorithm
     chords_naive = song.chordify()
@@ -158,7 +158,7 @@ def populate_notes_with_octaves(song):
 # Builds the probabilties by reading from a particular corpus
 def read_notes_corpus(corp, debug=False):
     def is_major(song):
-        return util.is_major(song.analyze('key'))
+        return util.is_major([key for key in song.flat.getElementsByClass('Key')][0])
     
     # All
     (unigrams, bigrams, trigrams, tetragrams, given) = corpus.read_corpus(corp, populate_notes, filt=None, debug=debug)

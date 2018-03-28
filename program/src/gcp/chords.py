@@ -34,7 +34,7 @@ def populate_chords(song):
     given = {chord_1:{note_1:0 for note_1 in note_types} for chord_1 in chord_types}
 
     # Get the key
-    key = song.analyze('key')    
+    key = [key for key in song.flat.getElementsByClass('Key')][0]  
 
     # Apply the naive chord algorithm
     chords_naive = song.chordify()
@@ -69,7 +69,7 @@ def populate_chords(song):
 # Builds the probabilties by reading from a particular corpus
 def read_chords_corpus(corp, debug=False):
     def is_major(song):
-        return util.is_major(song.analyze('key'))
+        return util.is_major([key for key in song.flat.getElementsByClass('Key')][0])
 
     # All
     (unigrams, bigrams, trigrams, tetragrams, given) = corpus.read_corpus(corp, populate_chords, filt=None, debug=debug)
