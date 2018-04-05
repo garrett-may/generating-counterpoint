@@ -8,7 +8,6 @@ import copy
 import collections
 from collections import Iterable
 import json
-import numpy as np
 
 # Class to represent a held note
 class Hold:
@@ -124,11 +123,14 @@ def populate_measures(song):
 # E.g. A crotchet may be split into [Note, Hold, Hold, Hold], where each element
 # has a time interval of a semiquaver        
 def equalise_interval(melody, interval=0.25):    
-    def parse_elem(elem):
-        return ([elem] + [Hold() for i in np.arange(interval, elem.quarterLength, interval)] if type(elem) is not Rest else
-                [Rest(quarterLength=interval) for i in np.arange(0.0, elem.quarterLength, interval)])    
     
-    return [e for elem in melody for e in parse_elem(elem)]
+    def parse_elem(elem, i):
+        return Rest(quarterLength=interval) if type(elem) is Rest else elem if i == 0 else Hold()
+        
+    def slice(elem):
+        return [parse_elem(elem, i) for i in range(0, int(elem.quarterLength / interval))] 
+    
+    return [e for elem in melody for e in slice(elem)]
     
 # Flattens a song into melodies, and then time interval equalises them
 def flatten_equalised_parts(song, interval=0.25):
@@ -170,7 +172,7 @@ def mimic_melody(note_sequence, melody):
 # Zips together a note sequence and a rhythm sequence
 def note_rhythm_zip(melody, note_sequence, rhythm_sequence, time_signature, interval=0.25):
     melody_sequence = mimic_melody(note_sequence, melody)
-    melody_sequence = [Note(elem.nameWithOctave, quarterLength=interval) if type(elem) is Note else Rest(quarterLength=interval) for elem in melody_sequence for i in np.arange(0.0, elem.quarterLength, interval)]
+    melody_sequence = [Note(elem.nameWithOctave, quarterLength=interval) if type(elem) is Note else Rest(quarterLength=interval) for elem in melody_sequence for i in range(0, int(elem.quarterLength / interval))]
     
     new_melody_sequence = []
     elem = None
@@ -189,6 +191,8 @@ def note_rhythm_zip(melody, note_sequence, rhythm_sequence, time_signature, inte
             # The possible extra note
             elem = Note(elem.nameWithOctave) if type(elem) is Note else Rest()
             elem.quarterLength = extra
+            if elem.quarterLength > 0.0:
+                new_melody_sequence += [elem]                
         else:
             new_melody_sequence += [elem]
             bar_length += elem.quarterLength            
