@@ -37,4 +37,4 @@ This will output the following files in the `program/res` folder:
 Two files are available as test inputs:
 
  - `birthday.mid`, the "Happy Birthday" theme, in the key of C major
- - `haydn.mid`, an excerpt of of the Symphony No. 94 "Surprise Symphony" theme by Haydn, in the key of C major
+ - `haydn.mid`, an excerpt of the Symphony No. 94 "Surprise Symphony" theme by Haydn, in the key of C major
