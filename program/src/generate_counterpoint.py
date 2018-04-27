@@ -3,10 +3,6 @@ from music21.corpus import getComposer
 from gcp import util, transform, chords, notes, rhythm, counterpoint
 import sys
 
-# You may need to set the following environment variables for music21:
-#environment.set('musicxmlPath', '/<path-to-folder>/program')
-#environment.set('midiPath', '/<path-to-folder>/program')
-
 # Reads the chords corpus, notes corpus, and rhythm corpus
 def read_all_corpus():
     # Corpus used here is Bach
